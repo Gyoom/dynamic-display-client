@@ -1,9 +1,13 @@
-import React,{ useEffect, useState } from "react";
+import React,{ useState } from "react";
 import { Button, Form, Input, Upload, Card } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import config from "services/config";
+import axios from 'axios'
+
+// react services
+import configServices from "services/config";
 
 const AddPageForm = ({ slides, setSlides }) => {
+
     const [image, setImage] = useState(null);
     const [uploadErrorMessage, setUploadErrorMessage] = useState("");
 
@@ -13,7 +17,7 @@ const AddPageForm = ({ slides, setSlides }) => {
         justifyContent: 'center'
     }
 
-    const handleSubmit = (values) => {
+    const handleSubmit = async (values) => {
         if(image === null)
         {
             setUploadErrorMessage("Please input a image file...")
@@ -28,14 +32,41 @@ const AddPageForm = ({ slides, setSlides }) => {
         var newSlide = {
             id: slides.length,
             name: values.name,
-            group: values.group,
+            group: values.group ? values.group : "",
             picture: image.thumbUrl,
             domainId: -1,
             domainOrder: -1
         }
 
-        setSlides(slides.concat(newSlide))
+        // console.log('file', image.originFileObj)
 
+        // var bodyFormData = new FormData();
+
+        // bodyFormData.append('file', image.originFileObj);
+
+        // for (var key of bodyFormData.entries()) {
+        //     console.log(key[0] + ', ' + key[1]);
+        // }
+
+        // axios({
+        //     method: "post",
+        //     url: "http://localhost:4000/config",
+        //     data: bodyFormData,
+        //     headers: { "Content-Type": "multipart/form-data" },
+        //   })
+        //     .then(function (response) {
+        //       //handle success
+        //       console.log(response);
+        //     })
+        //     .catch(function (response) {
+        //       //handle error
+        //       console.log(response);
+        //     });;
+        
+        
+        setSlides(slides.concat(newSlide))
+        configServices.postslides.concat(newSlide)
+        location.replace(location.href);
         
         
     }
@@ -50,7 +81,9 @@ const AddPageForm = ({ slides, setSlides }) => {
         },
         onChange: (info) => {
             if(info.fileList.length > 0)
+            {
                 setImage(info.fileList[0])
+            }
             else 
                 setImage(null)
         },
@@ -82,9 +115,9 @@ const AddPageForm = ({ slides, setSlides }) => {
 
                         <Form.Item
                             label="Group : "
-                            name="Group"
+                            name="group"
                             placeholder="my product ..."
-                            rules={[{ required: true, message: 'Please input a group ...' }]}
+                            rules={[{ required: false }]}
                         >
                             <Input />
                         </Form.Item>

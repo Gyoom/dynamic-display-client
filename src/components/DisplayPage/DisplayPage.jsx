@@ -2,11 +2,35 @@ import React,{ useEffect, useState } from "react";
 import loadingGif from "../../Assets/loading/loading.gif"
 import screenshots from "services/screenshots"; 
 
-const DisplayPage = () => {
+const loadStyle = {
+    display: "block", 
+    marginRight: 'auto', 
+    marginLeft:'auto', 
+    marginTop: '15%', 
+    height:'40%', 
+    width:'40%'
+}
 
-    const UPDATE_DISPLAY_DELAY = 10000;
-    var pictureArray = []
-    var pictureIndex = 0
+var time = false
+
+const DisplayPage = () => {
+    const [displayIsActive, setDisplayIsActive] = useState(false);
+    const [timeToReload, setTimeToReload] = useState(false);
+    const UPDATE_DISPLAY_DELAY = 10 * 1000;
+    const RELOAD_DELAY= 20 * 60 * 1000;
+    var slides = []
+    var slidesIndex = 0
+
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            time = true
+        }, RELOAD_DELAY);
+
+        return () => clearInterval(interval);
+    }, [])
+
+    const delay = ms => new Promise(res => setTimeout(res, ms))
 
     const toBlack = () => {
         document.body.style.transition = "opacity 3s"
@@ -18,64 +42,63 @@ const DisplayPage = () => {
         document.body.style.opacity = 1
     }
 
-    const delay = ms => new Promise(res => setTimeout(res, ms))
-
     const getScreenshot = async () => {
-        //const baseUrl = "http://localhost:4000/screenshots"
-        // const request = axios.get(baseUrl)
-        // pictureArray = []
-        // await request
-        //     .then(res => {
-        //             for (let index = 0; index < res.data.length; index++) {
-        //                 pictureArray.push(res.data[index]) 
-        //             }
-        //         }
-        //     )
         console.log("Start loading")
-        pictureArray = []
-        pictureArray = await screenshots.getAll()
+        slides = []
+        slidesIndex = 0
+        slides = await screenshots.getAll()
         console.log("Finish loading")
+        toBlack()
+        await delay(3000)
 
-        document.getElementById('img').style.height = "100%"
-        document.getElementById('img').style.width = "100%"
-        document.getElementById('img').setAttribute('src', "data:image/png;base64, " + pictureArray[pictureIndex]);
-        pictureIndex++;
-        console.log("loaded")
-    }
+        document.getElementById('img').style = {}
+        document.getElementById('img').style.height = '100%'
+        document.getElementById('img').style.width = '100%'
+        document.getElementById('img').setAttribute('src', slides[slidesIndex]);
 
-    const getLocalPicture = () => {
+        toWhite()
+        await delay(3000)
 
+        slidesIndex++;
+        console.log("displayed")
     }
 
     const displaySlideshow = async () => {
         while (true)
         {
+            if (time)
+            {
+                await getScreenshot()
+                time = false
+            }
+
             await delay(UPDATE_DISPLAY_DELAY)
             
-            if (pictureArray.length > 0)
+            if (slides.length > 0)
             {
                 toBlack()
                 await delay(3000)
-                //changeBackground("data:image/png;base64," + pictureArray[pictureIndex])
-                document.getElementById('img').setAttribute('src', "data:image/png;base64, " + pictureArray[pictureIndex]);
+                document.getElementById('img').setAttribute('src', slides[slidesIndex]);
                 toWhite()
                 await delay(3000)
                 
-                if (pictureIndex === pictureArray.length - 1)
-                    pictureIndex = 0
+                if (slidesIndex === slides.length - 1)
+                    slidesIndex = 0
                 else
-                    pictureIndex++
+                    slidesIndex++
             }
         }
     }
 
     const initSlideshow = async () => {
-        if (pictureArray.length === 0)
-        {
-            await getScreenshot()
-            await getLocalPicture()
-            displaySlideshow()
-        }
+        if (displayIsActive)
+            return
+        
+        setDisplayIsActive(true)
+        time = false
+
+        await getScreenshot()
+        displaySlideshow()
 
     }
 
@@ -83,7 +106,7 @@ const DisplayPage = () => {
 
     return (
         <>
-            <img id="img" style={{ display: "block", margin: "auto"}} src={loadingGif} ></img>
+            <img id="img" style={loadStyle} src={loadingGif} ></img>
         </>
     )
 
