@@ -1,4 +1,11 @@
 html, body, #root {
     margin: 0px;
     padding: 0px;
+    height: 100%;
+}
+
+#configButton { 
+    position: fixed;
+    top: 8em;
+    left: 1em;
 }

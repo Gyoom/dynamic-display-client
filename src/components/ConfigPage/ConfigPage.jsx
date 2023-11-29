@@ -1,112 +1,104 @@
 import React,{ useEffect, useState } from "react";
-import InfiniteScroll from 'react-infinite-scroll-component';
-import { Avatar, Divider, List, Skeleton, Button } from 'antd';
+import { Layout, Card, Avatar, Divider, List, Skeleton, Button } from 'antd';
 import { List as MovableList, arrayMove } from 'react-movable';
+// react components
+import AddPageForm from "components/AddPageForm/AddPageForm";
+// react services
+import configServices from "services/config";
+
+const { Header, Footer, Content } = Layout;
 
 const ConfigPage = () => {
-//     const [initLoading, setInitLoading] = useState(true);
-//     const [loading, setLoading] = useState(false);
-//     const [data, setData] = useState([]);
-//     const [list, setList] = useState([]);
-//     const fakeDataUrl = `https://randomuser.me/api/?results=3&inc=name,gender,email,nat,picture&noinfo`;
+
+    const [AddPageActive, setAddPageActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [slides, setSlides] = useState([]);
 
 
-//     useEffect(() => {
-//         fetch(fakeDataUrl)
-//         .then((res) => res.json())
-//         .then((res) => {
-//             setInitLoading(false);
-//             setData(res.results);
-//             setList(res.results);
-//         });
-//     }, []);
-    
-//     const onLoadMore = () => {
-//         setLoading(true);
-//         setList(
-//         data.concat(
-//             [...new Array(count)].map(() => ({
-//             loading: true,
-//             name: {},
-//             picture: {},
-//             })),
-//         ),
-//         );
-//         fetch(fakeDataUrl)
-//         .then((res) => res.json())
-//         .then((res) => {
-//             const newData = data.concat(res.results);
-//             setData(newData);
-//             setList(newData);
-//             setLoading(false);
-//             // Resetting window's offsetTop so as to display react-virtualized demo underfloor.
-//             // In real scene, you can using public method of react-virtualized:
-//             // https://stackoverflow.com/questions/46700726/how-to-use-public-method-updateposition-of-react-virtualized
-//             window.dispatchEvent(new Event('resize'));
-//         });
-//     };
-//     const loadMore =
-//         !initLoading && !loading ? (
-//         <div
-//             style={{
-//             textAlign: 'center',
-//             marginTop: 12,
-//             height: 32,
-//             lineHeight: '32px',
-//             }}
-//         >
-//             <Button onClick={onLoadMore}>loading more</Button>
-//         </div>
-//         ) : null;
+    const loadMoreData = () => {
+        if (loading) {
+          return;
+        }
+        setLoading(true);
+        configServices.getAll()
+          .then(response => {
+            setSlides([...response]);
+            setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+          });
+    };
 
-//     console.log(list)
-//     return (
-//         <MovableList
-//         className="demo-loadmore-list"
-//         loading={initLoading}
-//         itemLayout="horizontal"
-//         loadMore={loadMore}
-//         dataSource={list}
-//         renderItem={(item) => (
-//             <List.Item
-//                 actions={[<a key="list-loadmore-edit">edit</a>, <a key="list-loadmore-more">more</a>]}
-//             >
-//             <Skeleton avatar title={false} loading={item.loading} active>
-//                 <List.Item.Meta
-//                 avatar={<Avatar src={item.picture.large} />}
-//                 title={item.name?.last}
-//                 description="Ant Design, a design language for background applications, is refined by Ant UED Team"
-//                 />
-//                 <div>content</div>
-//             </Skeleton>
-//             </List.Item>
-//         )}
-//         />
-//   );
-    const [items, setItems] = useState(['Item 1', 'Item 2', 'Item 3']);
+      useEffect(() => {
+        loadMoreData();
+      }, []);
 
+    const headerStyle = {
+        color: '#fff',
+        backgroundColor: '#7dbcea',    
+        height: 110
+    }
+
+    const configList = {
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center'
+    }
+
+    const footerStyle = {
+        textAlign: 'center', 
+        color: '#fff', 
+        backgroundColor: '#7dbcea'
+    }
 
     return (
+        
         <Layout>
-            <Header><h1>E-Products</h1>
-                <div>
-                
-                </div>
+            <Header style={headerStyle}>
+                <h1 style={{height:10}}>Alpha Innovations</h1>
+                <h3 style={{paddingLeft:30}}>Dynamic Page Display - Config</h3>
             </Header>
-            <Content >    
-                <MovableList
-                    style={{ margin: "auto"}}
-                    values={items}
-                    onChange={({ oldIndex, newIndex }) =>
-                    setItems(arrayMove(items, oldIndex, newIndex))
-                    }
-                    renderList={({ children, props }) => <ul {...props}>{children}</ul>}
-                    renderItem={({ value, props }) => 
-                        <li {...props}>{value}</li>
+            <Content >
+                {AddPageActive ? <AddPageForm slides={slides} setSlides={setSlides}/> : ""}
+                <div style={configList}>
+                    <MovableList
+                        values={slides}
+                        onChange={({ oldIndex, newIndex }) =>
+                        setSlides(arrayMove(slides, oldIndex, newIndex))
+                        }
+                        renderList={({ children, props }) => <ul {...props} >{children}</ul>}
+                        renderItem={({ value, props }) => (
+                            <div {...props} >
+                                <Card style={{margin:5, width:"600px"}} title={<h4>{value.id + " - "+value.name}</h4>} bordered={false}>
+                                    <div style={{}}>
+                                        <label style={{fontWeight:"bold"}}>Group : </label>
+                                        <label>{value.group}</label>
+                                    </div>
+                                    <div>
+                                        <Button type="primary" style={{ margin:5, marginRight:20, marginTop:30, float:"right"}}>Delete</Button>
+                                    </div>
                         
-                    }
-                />
+                                    {value.dommainId !== -1 }
+
+                                </Card>
+                            </div>
+                        )}
+                    />
+                    
+                </div>  
+                <div id="configButton" >
+                    <div>
+                        <Button type="primary" style={{ margin:5}}>Save Changes</Button>
+                    </div>
+                    <div>
+                        <Button style={{ margin:5}} onClick={() => setAddPageActive(true)}>Add Page</Button>
+                    </div>
+                </div>
             </Content>
+            <Footer style={footerStyle}>
+                
+            </Footer>
         </Layout>
     );
 }
