@@ -1,56 +1,59 @@
+// npm packages
 import React,{ useEffect, useState } from "react";
-import { useNavigate, redirect } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Layout, Card, Button } from 'antd';
 import { List as MovableList, arrayMove } from 'react-movable';
 // react components
-import AddPageForm from "components/AddPageForm/AddPageForm";
+import AddPageForm from "components/ConfigPage/AddPageForm/AddPageForm";
 // react services
 import configServices from "services/config";
 
 const { Header, Footer, Content } = Layout;
 
 const ConfigPage = () => {
-
     const navigate = useNavigate()
     const [AddPageActive, setAddPageActive] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [slides, setSlides] = useState([]);
 
 
-    const loadMoreData = () => {
-        if (loading) {
+    const loadData = () => {
+        if (isLoading) {
           return;
         }
-        setLoading(true);
+        setIsLoading(true);
         configServices.getAll()
           .then(response => {
+            
             setSlides([...response]);
-            setLoading(false);
+            setIsLoading(false);
           })
           .catch(() => {
-            setLoading(false);
+            setIsLoading(false);
           });
     };
 
     useEffect(() => {
-    loadMoreData();
+        loadData();
     }, []);
 
     const handleSave = () => {
+        const mapOrder = []
         for (let index = 0; index < slides.length; index++) {
-            slides[index].id = index
+            slides[index].order = index
+            mapOrder.push({id: slides[index].id, order:index })
         }
-        configServices.post(slides)
+        configServices.updateOrder(mapOrder)
         navigate("/config");
     }
 
     const handleDelete = (id) => {
         var newSlides = slides.filter(slide => slide.id !== id)
         for (let index = 0; index < newSlides.length; index++) {
-            newSlides[index].id = index
+            newSlides[index].order = index
         }
         setSlides(newSlides)
-        configServices.post(newSlides)
+        configServices.remove(id)
         navigate("/config");
     }
 
@@ -62,7 +65,7 @@ const ConfigPage = () => {
                         <h3 style={{paddingLeft:30}}>Dynamic Page Display - Config</h3>
                     </Header>
                     <Content  id="content">
-                        {AddPageActive ? <AddPageForm slides={slides} setSlides={setSlides}/> : ""}
+                        {AddPageActive ? <AddPageForm slides={slides} setSlides={setSlides} /> : ""}
                         <div id="configList">
                             <MovableList
                                 values={slides}
@@ -74,7 +77,7 @@ const ConfigPage = () => {
                                 renderList={({ children, props }) => <ul {...props}>{children}</ul>}
                                 renderItem={({ value, props }) => (
                                     <div {...props} >
-                                        <Card style={{margin:5, width:"600px"}} title={<h4>{value.id + " - "+value.name}</h4>} bordered={false}>
+                                        <Card style={{margin:5, width:"600px"}} title={<h4>{(value.order+ 1) + " - "+value.name}</h4>} bordered={false}>
                                             <div style={{margin:10}}>
                                                 <label style={{fontWeight:"bold"}}>Image group : </label>
                                                 <label>
@@ -96,12 +99,8 @@ const ConfigPage = () => {
                                                     </>
                                                 }
                                             </div>
-                                            <div>
-                                                {   
-                                                    value.domainId === -1 ?
-                                                    <Button danger onClick={() => handleDelete(value.id)} style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button> : 
-                                                    <Button danger disabled style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button> 
-                                                }
+                                            <div> 
+                                                <Button danger onClick={() => handleDelete(value.id)} style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button>     
                                             </div>
                                 
                                             {value.dommainId !== -1 }

@@ -1,5 +1,6 @@
 import React,{ useEffect, useState } from "react";
 import loadingGif from "../../Assets/loading/loading.gif"
+// react services
 import screenshots from "services/screenshots"; 
 
 const loadStyle = {
@@ -15,8 +16,8 @@ var time = false
 
 const DisplayPage = () => {
     const [displayIsActive, setDisplayIsActive] = useState(false);
-    const [timeToReload, setTimeToReload] = useState(false);
-    const UPDATE_DISPLAY_DELAY = 10 * 1000;
+    const [stopDisplay, setStopDispay] = useState(false);
+    const UPDATE_DISPLAY_DELAY = 30 * 1000;
     const RELOAD_DELAY= 20 * 60 * 1000;
     var slides = []
     var slidesIndex = 0
@@ -51,19 +52,42 @@ const DisplayPage = () => {
         toBlack()
         await delay(3000)
 
-        document.getElementById('img').style = {}
-        document.getElementById('img').style.height = '100%'
-        document.getElementById('img').style.width = '100%'
-        document.getElementById('img').setAttribute('src', slides[slidesIndex]);
+        if (slides.length === 0 || slides.find(s => !s.startsWith('404')) == undefined)
+        {
+            setStopDispay(true)
+            alert("No available images")
+            return
+        }
+
+        for (let index = 0; index < slides.length; index++) {
+            if (!slides[slidesIndex].startsWith('404')) 
+            {
+                document.getElementById('img').style = {}
+                document.getElementById('img').style.height = '100%'
+                document.getElementById('img').style.width = '100%'
+                document.getElementById('img').setAttribute('src', slides[slidesIndex]);
+                console.log("slide " + slidesIndex + " is displayed")
+                slidesIndex++
+                break;
+            }
+            else 
+            {
+                console.log("slide " + slidesIndex + " cannot be made")
+                slidesIndex++
+            }
+        }
+
+        if (slidesIndex >= slides.length)
+            slidesIndex = 0
+
 
         toWhite()
         await delay(3000)
-
-        slidesIndex++;
-        console.log("displayed")
     }
 
     const displaySlideshow = async () => {
+        if (stopDisplay)
+            return
         while (true)
         {
             if (time)
@@ -76,16 +100,37 @@ const DisplayPage = () => {
             
             if (slides.length > 0)
             {
+                
                 toBlack()
                 await delay(3000)
-                document.getElementById('img').setAttribute('src', slides[slidesIndex]);
-                toWhite()
-                await delay(3000)
+
+
+                for (let index = 0; index < slides.length; index++) {
+                    if (!slides[slidesIndex].startsWith('404')) 
+                    {
+                        console.log("slide " + slidesIndex + " is displayed")
+                        document.getElementById('img').setAttribute('src', slides[slidesIndex])
+
+                        if (slidesIndex === slides.length - 1)
+                            slidesIndex = 0
+                        else
+                            slidesIndex++
+                        break
+                    }
+                    else 
+                    {
+                        console.log("slide " + slidesIndex + " cannot be made")
+                        
+                        if (slidesIndex === slides.length - 1)
+                            slidesIndex = 0
+                        else
+                            slidesIndex++
+                    }
+                    
+                }
                 
-                if (slidesIndex === slides.length - 1)
-                    slidesIndex = 0
-                else
-                    slidesIndex++
+                toWhite()
+                await delay(3000)     
             }
         }
     }

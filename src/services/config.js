@@ -12,7 +12,19 @@ const post = (newObject) => {
   return request.then(response => response.data)
 }
 
+const remove = (deletedObjectId) => {
+  const request = axios.delete(baseUrl + '/' + deletedObjectId)
+  return request.then(response => response.data)
+}
+
+const updateOrder = (newOrder) => {
+  const request = axios.put(baseUrl + '/order', newOrder)
+  return request.then(response => response.data)
+}
+
 export default { 
   getAll: getAll,
-  post  : post
+  post  : post,
+  remove : remove,
+  updateOrder : updateOrder
 }
