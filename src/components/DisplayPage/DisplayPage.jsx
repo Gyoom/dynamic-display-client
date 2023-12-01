@@ -51,7 +51,6 @@ const DisplayPage = () => {
         console.log("Finish loading")
         toBlack()
         await delay(3000)
-
         if (slides.length === 0 || slides.find(s => !s.startsWith('404')) == undefined)
         {
             setStopDispay(true)
