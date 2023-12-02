@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = "http://localhost:4000/screenshots"
+const baseUrl = "http://localhost:4000/pictures"
 
 const getAll = () => {
   const request = axios.get(baseUrl)

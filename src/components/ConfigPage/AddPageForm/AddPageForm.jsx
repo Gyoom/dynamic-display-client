@@ -3,11 +3,12 @@ import React,{ useState } from "react";
 import { Button, Form, Input, Card } from 'antd';
 import { v4 as uuid } from 'uuid';
 // react services
-import configServices from "services/config";
+import picturesService from "services/slides";
 
 const AddPageForm = ({ slides, setSlides }) => {
     const [image, setImage] = useState("");
-    const [uploadErrorMessage, setUploadErrorMessage] = useState("No files currently selected for upload");
+    const [isScreenshotSlide, setIsScreenshotSlide] = useState(false);
+    const [uploadErrorMessage, setUploadErrorMessage] = useState("* No files currently selected for upload");
 
     const fileTypes = [
         "image/jpeg",
@@ -17,27 +18,25 @@ const AddPageForm = ({ slides, setSlides }) => {
 
 
     const handleSubmit = async (values) => {
-        if (image === "")
+        if (image === "" && !isScreenshotSlide)
         {
-            setUploadErrorMessage("No files currently selected for upload")
+            setUploadErrorMessage("* No files currently selected for upload")
             return
         }
+        console.log(values)
 
         var newSlide = {
             id: uuid(),
             order: slides.length,
             name: values.name,
-            group: values.group ? values.group : "",
             picture: image,
-            domainId: -1,
-            domainOrder: -1
+            domainId: values.domainId !== undefined ? values.domainId : "",
+            domainOrder: values.domainOrder !== undefined ? values.domainOrder : -1
         }
 
         setSlides(slides.concat(newSlide))
-        configServices.post(newSlide)
-        location.replace(location.href);
-        
-        
+        picturesService.post(newSlide)
+        location.replace(location.href)   
     }
 
     const handleErrorSubmit = (errorInfo) => {
@@ -51,12 +50,19 @@ const AddPageForm = ({ slides, setSlides }) => {
     const handleImageChange = (e) => {
         if (e.target.files.length === 0)
         {
-            setUploadErrorMessage("No files currently selected for upload")
+            setUploadErrorMessage("* No files currently selected for upload")
             setImage("")
             return
         }
         if (!validFileType(e.target.files[0])) {
-            setUploadErrorMessage("the current file type is incorrect")
+            setUploadErrorMessage("* The current file type is incorrect")
+            setImage("")
+            return
+        }
+
+        if (e.target.files[0].size >= 1048576)
+        {
+            setUploadErrorMessage("* This file is too large")
             setImage("")
             return
         }
@@ -90,28 +96,44 @@ const AddPageForm = ({ slides, setSlides }) => {
                         >
                             <Input />
                         </Form.Item>
-
-                        <Form.Item
-                            className="label_add_slide"
-                            label="Group : "
-                            name="group"
-                            placeholder="my product ..."
-                            rules={[{ required: false }]}
-                        >
-                            <Input />
+                        <Form.Item style={{marginBottom:5}}>
+                            <label style={{display:"block"}}>
+                                <input style={{ verticalAlign: "middle", position: "relative", bottom:"1px" }} type="checkbox" id="screenshotCheckbox" onClick={(e) => setIsScreenshotSlide(e.target.checked)}/>
+                                Is this an automatic screenshot ?
+                            </label>
                         </Form.Item>
-
-                        <Form.Item>  
-                        <div style={{width:"500px"}}>
-                            <label className="label_add_slide" id="label_image_uploads" htmlFor="image_uploads">Choose image (.png, .jpg, .jpeg)</label> 
-                            <input type="file" style={{ opacity:"0"}}id="image_uploads" name="image_uploads" accept="image/png, image/jpeg" onChange={handleImageChange}/>
-                        </div>
-                        <div id="preview" style={{ marginTop:"20px" }}>
-                            { image !== "" ? <img id="img"  src={image} height="100px"/>: "" }
-                            { uploadErrorMessage ? <p style={{color:"red"}}>{uploadErrorMessage}</p> : "" }
-                            
-                        </div>
-                        </Form.Item>
+                        { isScreenshotSlide ? 
+                            <>
+                                <p style={{color:"red", marginTop:0}}>* For web developers only</p>
+                                <Form.Item
+                                    label="Domain id : "
+                                    name="DomainId"
+                                    rules={[{ required: true }]}
+                                >
+                                    <Input />
+                                </Form.Item>
+                                <Form.Item
+                                    label="Domain Order : "
+                                    name="DomainOrder"
+                                    rules={[{ required: true }]}
+                                >
+                                    <Input />
+                                </Form.Item>
+                            </>
+                        
+                        : 
+                            <Form.Item style={{marginBottom:0}}>  
+                                <div style={{width:"600px"}}>
+                                    <label className="label_add_slide" id="label_image_uploads" htmlFor="image_uploads">Choose a image (1 Mb max) .png, .jpg, .jpeg ...</label> 
+                                    <input type="file" style={{ opacity:"0"}}id="image_uploads" name="image_uploads" accept="image/png, image/jpeg" onChange={handleImageChange}/>
+                                </div>
+                                <div id="preview" style={{ marginTop:"20px" }}>
+                                    { image !== "" ? <img id="img"  src={image} height="100px"/>: "" }
+                                    { uploadErrorMessage ? <p style={{color:"red"}}>{uploadErrorMessage}</p> : "" }
+                                    
+                                </div>
+                            </Form.Item>
+                        }
 
                         <Form.Item
                             style={{ marginBottom:0 }}
@@ -129,5 +151,3 @@ const AddPageForm = ({ slides, setSlides }) => {
 }
 
 export default AddPageForm
-
-

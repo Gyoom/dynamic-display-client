@@ -6,7 +6,7 @@ import { List as MovableList, arrayMove } from 'react-movable';
 // react components
 import AddPageForm from "components/ConfigPage/AddPageForm/AddPageForm";
 // react services
-import configServices from "services/config";
+import picturesService from "services/slides";
 
 const { Header, Footer, Content } = Layout;
 
@@ -22,7 +22,7 @@ const ConfigPage = () => {
           return;
         }
         setIsLoading(true);
-        configServices.getAll()
+        picturesService.getAll()
           .then(response => {
             
             setSlides([...response]);
@@ -43,7 +43,7 @@ const ConfigPage = () => {
             slides[index].order = index
             mapOrder.push({id: slides[index].id, order:index })
         }
-        configServices.updateOrder(mapOrder)
+        picturesService.updateOrder(mapOrder)
         navigate("/config");
     }
 
@@ -53,7 +53,7 @@ const ConfigPage = () => {
             newSlides[index].order = index
         }
         setSlides(newSlides)
-        configServices.remove(id)
+        picturesService.remove(id)
         navigate("/config");
     }
 

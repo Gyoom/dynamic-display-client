@@ -1,7 +1,9 @@
-import React,{ useEffect, useState } from "react";
+import React,{ useState, useEffect, useContext } from "react"
 import loadingGif from "../../Assets/loading/loading.gif"
 // react services
-import screenshots from "services/screenshots"; 
+import picturesService from "services/pictures"
+// react contexts
+import { Context as ConfigContext } from "contexts/configContext"
 
 const loadStyle = {
     display: "block", 
@@ -15,42 +17,72 @@ const loadStyle = {
 var time = false
 
 const DisplayPage = () => {
-    const [displayIsActive, setDisplayIsActive] = useState(false);
-    const [stopDisplay, setStopDispay] = useState(false);
-    const UPDATE_DISPLAY_DELAY = 30 * 1000;
-    const RELOAD_DELAY= 20 * 60 * 1000;
+    const { 
+        isConfigInitialized, 
+        setIsConfigInitialized, 
+        isConfigUpToDate, 
+        config 
+    } = useContext(ConfigContext)
+    const [displayIsActive, setDisplayIsActive] = useState(false)
+    const [stopDisplay, setStopDispay] = useState(false)
+    var updateDisplayDelay = 10 * 1000
+    var reloadDelay = 20 * 60 * 1000
     var slides = []
     var slidesIndex = 0
 
-
+    // timer next load pictures
     useEffect(() => {
         const interval = setInterval(() => {
             time = true
-        }, RELOAD_DELAY);
+        }, reloadDelay)
 
-        return () => clearInterval(interval);
+        return () => clearInterval(interval)
     }, [])
 
-    const delay = ms => new Promise(res => setTimeout(res, ms))
+    // keep the config up to date
+    useEffect(() => {
+        if (isConfigInitialized)
+        {
+            console.log(config)
+            updateDisplayDelay = config.updateDisplayDelay * 1000
+            reloadDelay = config.updateDisplayDelay * 60 * 1000
+            setIsConfigInitialized(false)
+        }
+        else if(!isConfigUpToDate)
+        {
+            location.replace(location.href)  
+        }
+    }, [isConfigUpToDate, isConfigInitialized])
 
+    // delay function
+    const delay = ms => new Promise(res => setTimeout(res, ms))
+    
+    // transition first part
     const toBlack = () => {
         document.body.style.transition = "opacity 3s"
         document.body.style.opacity = 0
     }
   
+    // transition second part
     const toWhite = () => {
         document.body.style.transition = "opacity 3s"
         document.body.style.opacity = 1
     }
-
-    const getScreenshot = async () => {
+    
+    // load picture
+    const getPictures = async () => {
+        // load picture
         console.log("Start loading")
         slides = []
         slidesIndex = 0
-        slides = await screenshots.getAll()
+        slides = await picturesService.getAll()
         console.log("Finish loading")
+
+        // start first part transition
         toBlack()
         await delay(3000)
+
+        // check if available picture exist
         if (slides.length === 0 || slides.find(s => !s.startsWith('404')) == undefined)
         {
             setStopDispay(true)
@@ -58,6 +90,7 @@ const DisplayPage = () => {
             return
         }
 
+        // display first available picture
         for (let index = 0; index < slides.length; index++) {
             if (!slides[slidesIndex].startsWith('404')) 
             {
@@ -79,69 +112,73 @@ const DisplayPage = () => {
         if (slidesIndex >= slides.length)
             slidesIndex = 0
 
-
+        // start second part first transition
         toWhite()
         await delay(3000)
     }
 
     const displaySlideshow = async () => {
+        // check no existing picture
         if (stopDisplay)
             return
         while (true)
         {
+            // // check time to load picture
             if (time)
             {
-                await getScreenshot()
+                await getPictures()
                 time = false
             }
 
-            await delay(UPDATE_DISPLAY_DELAY)
+            // wait next transition
+            await delay(updateDisplayDelay)
             
-            if (slides.length > 0)
-            {
-                
-                toBlack()
-                await delay(3000)
+            // start first part transition   
+            toBlack()
+            await delay(3000)
 
+            // display next available picture
+            for (let index = 0; index < slides.length; index++) {
+                if (!slides[slidesIndex].startsWith('404')) 
+                {
+                    console.log("slide " + slidesIndex + " is displayed")
+                    document.getElementById('img').setAttribute('src', slides[slidesIndex])
 
-                for (let index = 0; index < slides.length; index++) {
-                    if (!slides[slidesIndex].startsWith('404')) 
-                    {
-                        console.log("slide " + slidesIndex + " is displayed")
-                        document.getElementById('img').setAttribute('src', slides[slidesIndex])
-
-                        if (slidesIndex === slides.length - 1)
-                            slidesIndex = 0
-                        else
-                            slidesIndex++
-                        break
-                    }
-                    else 
-                    {
-                        console.log("slide " + slidesIndex + " cannot be made")
-                        
-                        if (slidesIndex === slides.length - 1)
-                            slidesIndex = 0
-                        else
-                            slidesIndex++
-                    }
+                    if (slidesIndex === slides.length - 1)
+                        slidesIndex = 0
+                    else
+                        slidesIndex++
+                    break
+                }
+                else 
+                {
+                    console.log("slide " + slidesIndex + " cannot be made")
                     
+                    if (slidesIndex === slides.length - 1)
+                        slidesIndex = 0
+                    else
+                        slidesIndex++
                 }
                 
-                toWhite()
-                await delay(3000)     
             }
+
+            // start second transition
+            toWhite()
+            await delay(3000)     
+    
         }
     }
-
+    // init 
     const initSlideshow = async () => {
+        // check only one loop 
         if (displayIsActive)
             return
         
         setDisplayIsActive(true)
         time = false
-
-        await getScreenshot()
+        // load pictures
+        await getPictures()
+        // endless picture display
         displaySlideshow()
 
     }
