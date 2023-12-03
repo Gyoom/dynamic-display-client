@@ -9,9 +9,7 @@ const Context = React.createContext(null)
     
 const ProviderWrapper = (props) => {
     const [ isConfigInitialized, setIsConfigInitialized ] = useState(false)
-    const [ isConfigUpToDate, setIsConfigUpToDate ] = useState(true)
-    const [ config, setConfig ] = useState(
-    )
+    const [ config, setConfig ] = useState()
     
 
     const hook = () => {
@@ -29,15 +27,12 @@ const ProviderWrapper = (props) => {
     const changeConfig = async (newConfig) => {
         await configService.change(newConfig)
         setConfig(newConfig)
-        setIsConfigUpToDate(false)
     }
 
     
     const exposedValue = {
         isConfigInitialized, 
         setIsConfigInitialized,
-        isConfigUpToDate,
-        setIsConfigUpToDate,
         config,
         changeConfig,
     }

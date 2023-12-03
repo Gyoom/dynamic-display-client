@@ -1,14 +1,15 @@
 // packages npm
 import React,{ useState } from "react";
-import { Button, Form, Input, Card } from 'antd';
+import { Button, Form, Input, InputNumber, Card } from 'antd';
 import { v4 as uuid } from 'uuid';
 // react services
 import picturesService from "services/slides";
 
 const AddPageForm = ({ slides, setSlides }) => {
-    const [image, setImage] = useState("");
-    const [isScreenshotSlide, setIsScreenshotSlide] = useState(false);
-    const [uploadErrorMessage, setUploadErrorMessage] = useState("* No files currently selected for upload");
+    // use states
+    const [image, setImage] = useState("")
+    const [isScreenshotSlide, setIsScreenshotSlide] = useState(false)
+    const [uploadErrorMessage, setUploadErrorMessage] = useState("* No files currently selected for upload")
 
     const fileTypes = [
         "image/jpeg",
@@ -106,18 +107,18 @@ const AddPageForm = ({ slides, setSlides }) => {
                             <>
                                 <p style={{color:"red", marginTop:0}}>* For web developers only</p>
                                 <Form.Item
-                                    label="Domain id : "
+                                    label="Domain name : "
                                     name="DomainId"
-                                    rules={[{ required: true }]}
+                                    rules={[{ required: true, message: 'Please input a domain name ...' }]}
                                 >
                                     <Input />
                                 </Form.Item>
                                 <Form.Item
                                     label="Domain Order : "
                                     name="DomainOrder"
-                                    rules={[{ required: true }]}
+                                    rules={[{ required: true, message: 'Please input a domain order ...' }]}
                                 >
-                                    <Input />
+                                    <InputNumber min={1} />
                                 </Form.Item>
                             </>
                         

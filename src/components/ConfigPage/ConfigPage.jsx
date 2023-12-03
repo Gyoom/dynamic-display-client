@@ -1,49 +1,83 @@
-// npm packages
-import React,{ useEffect, useState } from "react";
+// npm package(s)
+import React,{ useEffect, useState, useContext } from "react"
 import { useNavigate } from 'react-router-dom'
-import { Layout, Card, Button } from 'antd';
-import { List as MovableList, arrayMove } from 'react-movable';
-// react components
-import AddPageForm from "components/ConfigPage/AddPageForm/AddPageForm";
-// react services
-import picturesService from "services/slides";
+import { Layout, Card, Button, InputNumber } from 'antd'
+import { List as MovableList, arrayMove } from 'react-movable'
+// react component(s)
+import AddPageForm from "components/ConfigPage/AddPageForm/AddPageForm"
+// react service(s)
+import picturesService from "services/slides"
+// react context(s)
+import { Context as ConfigContext } from "contexts/configContext"
 
 const { Header, Footer, Content } = Layout;
 
 const ConfigPage = () => {
+    // use context(s)
+    const { 
+        isConfigInitialized, 
+        config,
+        changeConfig
+    } = useContext(ConfigContext)
+    // use navigate
     const navigate = useNavigate()
-    const [AddPageActive, setAddPageActive] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [slides, setSlides] = useState([]);
+    // use state(s)
+    const [isLoading, setIsLoading] = useState(false)
+    const [slides, setSlides] = useState([])
+    const [AddPageActive, setAddPageActive] = useState(false)
+    const [displayDelay, setDisplayDelay] = useState(0)
+    const [reloadDelay, setReloadDelay] = useState(0)
 
-
+    // use effect(s)
     const loadData = () => {
-        if (isLoading) {
-          return;
+        if (!isLoading) {
+            setIsLoading(true);
+            picturesService.getAll()
+            .then(response => {
+                
+                setSlides([...response])
+                setIsLoading(false)
+            })
+            .catch(() => {
+                setIsLoading(false)
+            })
         }
-        setIsLoading(true);
-        picturesService.getAll()
-          .then(response => {
-            
-            setSlides([...response]);
-            setIsLoading(false);
-          })
-          .catch(() => {
-            setIsLoading(false);
-          });
-    };
+        if (isConfigInitialized)
+        {
+            setDisplayDelay(config.displayDelay) 
+            document.getElementById("displayDelayInput").style.border = ""
+            setReloadDelay(config.reloadDelay)
+            document.getElementById("reloadDelayInput").style.border = ""
+        }
+    }
 
     useEffect(() => {
         loadData();
-    }, []);
+    }, [isConfigInitialized]);
 
-    const handleSave = () => {
-        const mapOrder = []
+    //  handle(s)
+    const handleSave = async () => {
+        // save order slides
+        const newOrder = []
         for (let index = 0; index < slides.length; index++) {
             slides[index].order = index
-            mapOrder.push({id: slides[index].id, order:index })
+            newOrder.push({id: slides[index].id, order:index })
         }
-        picturesService.updateOrder(mapOrder)
+        // save config
+        if(
+            displayDelay !== config.displayDelay ||
+            reloadDelay !== config.reloadDelay
+           )
+        {
+            var newConfig = 
+            {
+                displayDelay: displayDelay,
+                reloadDelay: reloadDelay
+            }
+            await changeConfig(newConfig)
+
+        }
+        await picturesService.updateOrder(newOrder)
         navigate("/config");
     }
 
@@ -57,12 +91,59 @@ const ConfigPage = () => {
         navigate("/config");
     }
 
+    const handleReloadDelay = (e) => {
+        if (!Number.isInteger(e) || e < 5)
+        {   
+            document.getElementById("reloadDelayInput").style.border = "2px solid red"
+            return
+        }
+        document.getElementById("reloadDelayInput").style.border = ""
+        console.log(e)
+        setReloadDelay(e)
+    }
+
+    const handleDisplayDelay = (e) => {
+        if (!Number.isInteger(e) || e < 1)
+        {   
+            document.getElementById("displayDelayInput").style.border = "2px solid red"
+            return
+        }
+        document.getElementById("displayDelayInput").style.border = ""
+        setDisplayDelay(e)
+
+    }
+
     return (
         <>  
             <Layout id="layout">
                     <Header id="header">
                         <h1 style={{height:10}}>Alpha Innovations</h1>
-                        <h3 style={{paddingLeft:30}}>Dynamic Page Display - Config</h3>
+                        <div style={{ width:"100%" }}>
+                            <h3 style={{ display: "inline", paddingLeft:30 }}>Dynamic Page Display - Config</h3>
+                            <InputNumber 
+                                    style={{ marginTop:30, marginLeft:5, float:"right" }}
+                                    size="small" 
+                                    addonAfter="min"
+                                    id="reloadDelayInput"
+                                    value={reloadDelay}
+                                    onChange={handleReloadDelay}
+                                    
+                                />
+                            <label style={{ marginTop:10, marginLeft:15, float:"right" }}>
+                                Reload Delay (min 5) : 
+                            </label>
+                            <InputNumber 
+                                    style={{ marginTop:30, marginLeft:5, float:"right" }}
+                                    size="small" 
+                                    addonAfter="s"
+                                    id="displayDelayInput"
+                                    value={displayDelay}
+                                    onChange={handleDisplayDelay}
+                            />
+                            <label style={{ marginTop:10, float:"right" }}>
+                                Display Delay (min 1) :   
+                            </label>
+                        </div>
                     </Header>
                     <Content  id="content">
                         {AddPageActive ? <AddPageForm slides={slides} setSlides={setSlides} /> : ""}

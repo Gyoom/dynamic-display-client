@@ -1,8 +1,10 @@
+// npm packag(s)
 import React,{ useState, useEffect, useContext } from "react"
+// local file(s)
 import loadingGif from "../../Assets/loading/loading.gif"
-// react services
+// react service(s)
 import picturesService from "services/pictures"
-// react contexts
+// react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
 
 const loadStyle = {
@@ -13,23 +15,21 @@ const loadStyle = {
     height:'40%', 
     width:'40%'
 }
-
 var time = false
 
 const DisplayPage = () => {
-    const { 
-        isConfigInitialized, 
-        setIsConfigInitialized, 
-        isConfigUpToDate, 
-        config 
-    } = useContext(ConfigContext)
+    // use context(s)
+    const { isConfigInitialized, config } = useContext(ConfigContext)
+    // use state(s)
     const [displayIsActive, setDisplayIsActive] = useState(false)
     const [stopDisplay, setStopDispay] = useState(false)
-    var updateDisplayDelay = 10 * 1000
+    // javascript variables
+    var displayDelay = 10 * 1000
     var reloadDelay = 20 * 60 * 1000
     var slides = []
     var slidesIndex = 0
 
+    // use effect(s)
     // timer next load pictures
     useEffect(() => {
         const interval = setInterval(() => {
@@ -44,16 +44,12 @@ const DisplayPage = () => {
         if (isConfigInitialized)
         {
             console.log(config)
-            updateDisplayDelay = config.updateDisplayDelay * 1000
-            reloadDelay = config.updateDisplayDelay * 60 * 1000
-            setIsConfigInitialized(false)
-        }
-        else if(!isConfigUpToDate)
-        {
-            location.replace(location.href)  
+            displayDelay = config.displayDelay * 1000
+            reloadDelay = config.reloadDelay * 60 * 1000
         }
     }, [isConfigUpToDate, isConfigInitialized])
 
+    // functions
     // delay function
     const delay = ms => new Promise(res => setTimeout(res, ms))
     
@@ -87,6 +83,7 @@ const DisplayPage = () => {
         {
             setStopDispay(true)
             alert("No available images")
+            document.getElementById('img').remove();
             return
         }
 
@@ -131,7 +128,7 @@ const DisplayPage = () => {
             }
 
             // wait next transition
-            await delay(updateDisplayDelay)
+            await delay(displayDelay)
             
             // start first part transition   
             toBlack()
