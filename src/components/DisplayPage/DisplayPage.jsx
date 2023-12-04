@@ -43,11 +43,10 @@ const DisplayPage = () => {
     useEffect(() => {
         if (isConfigInitialized)
         {
-            console.log(config)
             displayDelay = config.displayDelay * 1000
             reloadDelay = config.reloadDelay * 60 * 1000
         }
-    }, [isConfigUpToDate, isConfigInitialized])
+    }, [isConfigInitialized])
 
     // functions
     // delay function

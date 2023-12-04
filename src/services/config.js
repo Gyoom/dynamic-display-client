@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = "http://localhost:4000/config"
+const baseUrl = import.meta.env.VITE_URL_SERVER + "/config"
 
 const get = () => {
   const request = axios.get(baseUrl)

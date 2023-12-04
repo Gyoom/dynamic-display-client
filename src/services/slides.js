@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = "http://localhost:4000/slides"
+const baseUrl = import.meta.env.VITE_URL_SERVER + "/slides"
 
 const getAll = () => {
   const request = axios.get(baseUrl)

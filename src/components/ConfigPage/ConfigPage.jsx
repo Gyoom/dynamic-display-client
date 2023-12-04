@@ -81,13 +81,13 @@ const ConfigPage = () => {
         navigate("/config");
     }
 
-    const handleDelete = (id) => {
-        var newSlides = slides.filter(slide => slide.id !== id)
+    const handleDelete = (order) => {
+        var newSlides = slides.filter(slide => slide.order !== order)
         for (let index = 0; index < newSlides.length; index++) {
             newSlides[index].order = index
         }
         setSlides(newSlides)
-        picturesService.remove(id)
+        picturesService.remove(order)
         navigate("/config");
     }
 
@@ -172,7 +172,7 @@ const ConfigPage = () => {
                                             <div style={{margin:10}}>
                                                 <label style={{fontWeight:"bold"}}>Image type : </label>
                                                 {
-                                                    value.domainId === -1 ?
+                                                    value.domainId === "" ?
                                                     <label>Uploded Image</label> :
                                                     <>
                                                     <label>Automatic screenshot capture</label>
@@ -181,7 +181,7 @@ const ConfigPage = () => {
                                                 }
                                             </div>
                                             <div> 
-                                                <Button danger onClick={() => handleDelete(value.id)} style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button>     
+                                                <Button danger onClick={() => handleDelete(value.order)} style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button>     
                                             </div>
                                 
                                             {value.dommainId !== -1 }
@@ -197,7 +197,7 @@ const ConfigPage = () => {
                                 <Button type="primary" style={{ margin:5}} onClick={() => handleSave()}>Save Changes</Button>
                             </div>
                             <div>
-                                <Button style={{ margin:5}} onClick={() => setAddPageActive(true)}>Add Page</Button>
+                                <Button style={{ margin:5}} onClick={() => setAddPageActive(!AddPageActive)}>Add Page</Button>
                             </div>
                         </div>
                         <div id="rightButtonConfig" >
