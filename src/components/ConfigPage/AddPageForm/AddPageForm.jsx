@@ -31,8 +31,8 @@ const AddPageForm = ({ slides, setSlides }) => {
             order: slides.length,
             name: values.name,
             picture: image,
-            domainId: values.domainId !== undefined ? values.domainId : "",
-            domainOrder: values.domainOrder !== undefined ? values.domainOrder : -1
+            domain: values.domain !== undefined ? values.domain : "",
+            webpagePathData: values.webpagePathData !== undefined ? values.webpagePathData : -1
         }
 
         setSlides(slides.concat(newSlide))
@@ -107,18 +107,18 @@ const AddPageForm = ({ slides, setSlides }) => {
                             <>
                                 <p style={{color:"red", marginTop:0}}>* For web developers only</p>
                                 <Form.Item
-                                    label="Domain name : "
-                                    name="DomainId"
+                                    label="Domain : "
+                                    name="domain"
                                     rules={[{ required: true, message: 'Please input a domain name ...' }]}
                                 >
                                     <Input />
                                 </Form.Item>
                                 <Form.Item
-                                    label="Domain Order : "
-                                    name="DomainOrder"
+                                    label="Path data : "
+                                    name="webpagePathData"
                                     rules={[{ required: true, message: 'Please input a domain order ...' }]}
                                 >
-                                    <InputNumber min={1} />
+                                    <Input />
                                 </Form.Item>
                             </>
                         

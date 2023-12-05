@@ -130,7 +130,7 @@ const ConfigPage = () => {
                                     
                                 />
                             <label style={{ marginTop:10, marginLeft:15, float:"right" }}>
-                                Reload Delay (min 5) : 
+                                Reload Delay ({'>='} 5) : 
                             </label>
                             <InputNumber 
                                     style={{ marginTop:30, marginLeft:5, float:"right" }}
@@ -141,7 +141,7 @@ const ConfigPage = () => {
                                     onChange={handleDisplayDelay}
                             />
                             <label style={{ marginTop:10, float:"right" }}>
-                                Display Delay (min 1) :   
+                                Display Delay ({'>='} 1) :   
                             </label>
                         </div>
                     </Header>
