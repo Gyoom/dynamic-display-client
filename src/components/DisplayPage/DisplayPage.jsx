@@ -98,7 +98,12 @@ const DisplayPage = () => {
             height: 900,
             width: 1920,
         }
-        rawPictures = await picturesService.getAll(screenResolution)
+        rawPictures = await picturesService.getAll(screenResolution).catch(e =>
+            {
+                console.log(e)
+                alert("communication error with server, please reload")    
+                return
+            })
         console.log("Finish loading")
 
         // check if available picture exist
@@ -219,9 +224,17 @@ const DisplayPage = () => {
             <img id="img" style={loadStyle} src={loadingGif} ></img>
             { loopIsActive ?
                 <>
-                    <Button style={{ position: 'fixed', bottom: '1em', left: '1em'}} onClick={previous} >Previous</Button>
-                    <Button style={{ position: 'fixed', bottom: '1em', right: '1em'}}onClick={next} >Next</Button>
-                </> 
+                    <div style={{ position: 'fixed', bottom: '2%', left: '1%'}}>
+
+                        <Button style={{ display:'block', margin:2, height:35, width:80}} onClick={previous} >Previous</Button>
+                        <Button style={{ margin:2, height:35, width:80}} onClick={next} >Next</Button>
+                    </div> 
+                    <div style={{ textAlign:'right', position: 'fixed', bottom: '2%', right: '1%'}}>
+
+                    <Button style={{display:'block', height:35, width:80, margin:2}} onClick={previous} >Previous</Button>
+                    <Button style={{ margin:2 , height:35, width:80 }} onClick={next} >Next</Button>
+                    </div>
+                </>
             : "" }
         </>
     )
