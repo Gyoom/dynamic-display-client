@@ -7,12 +7,17 @@ const getAll = () => {
   return request.then(response => response.data)
 }
 
-const post = (newObject) => {
+const getAllToDisplay = () => {
+  const request = axios.get(baseUrl + '/todisplay')
+  return request.then(response => response.data)
+}
+
+const createOne = (newObject) => {
   const request = axios.post(baseUrl, newObject)
   return request.then(response => response.data)
 }
 
-const remove = (deletedObjectId) => {
+const removeOneById = (deletedObjectId) => {
   const request = axios.delete(baseUrl + '/' + deletedObjectId)
   return request.then(response => response.data)
 }
@@ -24,7 +29,8 @@ const updateOrder = (newOrder) => {
 
 export default { 
   getAll: getAll,
-  post  : post,
-  remove : remove,
+  getAllToDisplay, getAllToDisplay,
+  createOne  : createOne,
+  removeOneById : removeOneById,
   updateOrder : updateOrder
 }

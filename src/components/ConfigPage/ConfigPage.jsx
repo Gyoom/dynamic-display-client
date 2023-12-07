@@ -1,38 +1,42 @@
 // npm package(s)
 import React,{ useEffect, useState, useContext } from "react"
 import { useNavigate } from 'react-router-dom'
-import { Layout, Card, Button, InputNumber } from 'antd'
+import { Layout, Card, Button } from 'antd'
 import { List as MovableList, arrayMove } from 'react-movable'
 // react component(s)
 import AddPageForm from "components/ConfigPage/AddPageForm/AddPageForm"
+import UpdateConfigForm from "./UpdateConfigForm/UpdateConfigForm"
 // react service(s)
-import picturesService from "services/slides"
+import slideServices from "services/slides"
 // react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
+
 
 const { Header, Footer, Content } = Layout;
 
 const ConfigPage = () => {
-    // use context(s)
-    const { 
-        isConfigInitialized, 
-        config,
-        changeConfig
-    } = useContext(ConfigContext)
     // use navigate
     const navigate = useNavigate()
     // use state(s)
     const [isLoading, setIsLoading] = useState(false)
     const [slides, setSlides] = useState([])
-    const [AddPageActive, setAddPageActive] = useState(false)
-    const [displayDelay, setDisplayDelay] = useState(0)
-    const [reloadDelay, setReloadDelay] = useState(0)
+    const [addSlideActive, setAddSlideActive] = useState(false)
+    const [updateConfigActive, setUpdateConfigActive] = useState(false)
+    // config use state(s)
+    const [displayDelay, setDisplayDelay] = useState(-1)
+    const [reloadDelay, setReloadDelay] = useState(-1)
+    const [transitionDelay, setTransitionDelay] = useState(-1)
+    const [domainNames, setDomainNames] = useState([])
+    const { 
+        config,
+        changeConfig
+    } = useContext(ConfigContext)
 
     // use effect(s)
     const loadData = () => {
         if (!isLoading) {
             setIsLoading(true);
-            picturesService.getAll()
+            slideServices.getAll()
             .then(response => {
                 
                 setSlides([...response])
@@ -42,18 +46,11 @@ const ConfigPage = () => {
                 setIsLoading(false)
             })
         }
-        if (isConfigInitialized)
-        {
-            setDisplayDelay(config.displayDelay) 
-            document.getElementById("displayDelayInput").style.border = ""
-            setReloadDelay(config.reloadDelay)
-            document.getElementById("reloadDelayInput").style.border = ""
-        }
     }
 
     useEffect(() => {
         loadData();
-    }, [isConfigInitialized]);
+    }, []);
 
     //  handle(s)
     const handleSave = async () => {
@@ -63,22 +60,25 @@ const ConfigPage = () => {
             slides[index].order = index
             newOrder.push({id: slides[index].id, order:index })
         }
-        // save config
+        await slideServices.updateOrder(newOrder)
+
         if(
             displayDelay !== config.displayDelay ||
-            reloadDelay !== config.reloadDelay
+            reloadDelay !== config.reloadDelay ||
+            transitionDelay !== config.transitionDelay ||
+            domainNames.toString() !== config.domains.toString()
            )
         {
             var newConfig = 
             {
                 displayDelay: displayDelay,
-                reloadDelay: reloadDelay
+                reloadDelay: reloadDelay,
+                transitionDelay : transitionDelay,
+                domains : domainNames
             }
-            await changeConfig(newConfig)
-
-        }
-        await picturesService.updateOrder(newOrder)
-        navigate("/config");
+            await changeConfig(newConfig)  
+            setUpdateConfigActive(false)
+        } 
     }
 
     const handleDelete = (order) => {
@@ -87,30 +87,25 @@ const ConfigPage = () => {
             newSlides[index].order = index
         }
         setSlides(newSlides)
-        picturesService.remove(order)
+        slideServices.removeOneById(order)
         navigate("/config");
     }
 
-    const handleReloadDelay = (e) => {
-        if (!Number.isInteger(e) || e < 5)
-        {   
-            document.getElementById("reloadDelayInput").style.border = "2px solid red"
-            return
-        }
-        document.getElementById("reloadDelayInput").style.border = ""
-        console.log(e)
-        setReloadDelay(e)
-    }
+    const displayForm = (form, value) => {
+        setAddSlideActive(false)
+        setUpdateConfigActive(false)
+        switch(form) {
+            case 'config':
+                setUpdateConfigActive(value)
+                break
+            case 'slide':
+                setAddSlideActive(value)
+                break
+            default:
+                break
 
-    const handleDisplayDelay = (e) => {
-        if (!Number.isInteger(e) || e < 1)
-        {   
-            document.getElementById("displayDelayInput").style.border = "2px solid red"
-            return
         }
-        document.getElementById("displayDelayInput").style.border = ""
-        setDisplayDelay(e)
-
+        window.scrollTo(0, 0)
     }
 
     return (
@@ -120,66 +115,59 @@ const ConfigPage = () => {
                         <h1 style={{height:10}}>Alpha Innovations</h1>
                         <div style={{ width:"100%" }}>
                             <h3 style={{ display: "inline", paddingLeft:30 }}>Dynamic Page Display - Config</h3>
-                            <InputNumber 
-                                    style={{ marginTop:30, marginLeft:5, float:"right" }}
-                                    size="small" 
-                                    addonAfter="min"
-                                    id="reloadDelayInput"
-                                    value={reloadDelay}
-                                    onChange={handleReloadDelay}
-                                    
-                                />
-                            <label style={{ marginTop:10, marginLeft:15, float:"right" }}>
-                                Reload Delay ({'>='} 5) : 
-                            </label>
-                            <InputNumber 
-                                    style={{ marginTop:30, marginLeft:5, float:"right" }}
-                                    size="small" 
-                                    addonAfter="s"
-                                    id="displayDelayInput"
-                                    value={displayDelay}
-                                    onChange={handleDisplayDelay}
-                            />
-                            <label style={{ marginTop:10, float:"right" }}>
-                                Display Delay ({'>='} 1) :   
-                            </label>
                         </div>
                     </Header>
                     <Content  id="content">
-                        {AddPageActive ? <AddPageForm slides={slides} setSlides={setSlides} /> : ""}
+                        {addSlideActive ? <AddPageForm 
+                            slides={slides} 
+                            setSlides={setSlides} 
+                            setAddSlideActive={setAddSlideActive}
+                        /> : ""}
+                        {updateConfigActive ? <UpdateConfigForm 
+                            displayDelay={displayDelay} 
+                            setDisplayDelay={setDisplayDelay}
+                            reloadDelay={reloadDelay}
+                            setReloadDelay={setReloadDelay}
+                            transitionDelay={transitionDelay}
+                            setTransitionDelay={setTransitionDelay}
+                            domainNames={domainNames}
+                            setDomainNames={setDomainNames}
+                        /> : ""}
                         <div id="configList">
                             <MovableList
                                 values={slides}
                                 onChange={({ oldIndex, newIndex }) => {
                                         setSlides(arrayMove(slides, oldIndex, newIndex)) 
                                     }
-                                
                                 }
                                 renderList={({ children, props }) => <ul {...props}>{children}</ul>}
                                 renderItem={({ value, props }) => (
                                     <div {...props} >
                                         <Card style={{margin:5, width:"600px"}} title={<h4>{(value.order+ 1) + " - "+value.name}</h4>} bordered={false}>
-                                            <div style={{margin:10}}>
-                                                <label style={{fontWeight:"bold"}}>Image group : </label>
-                                                <label>
-                                                    {
-                                                        value.group === "" ?
-                                                        "No group" :
-                                                        value.group
-                                                    }
-                                                </label>
-                                            </div>
-                                            <div style={{margin:10}}>
-                                                <label style={{fontWeight:"bold"}}>Image type : </label>
-                                                {
-                                                    value.domainId === "" ?
-                                                    <label>Uploded Image</label> :
-                                                    <>
-                                                    <label>Automatic screenshot capture</label>
-                                                    <p style={{color:"red", margin:0, paddingLeft:20}}>* to modify this slide please contact a web developer</p>
-                                                    </>
-                                                }
-                                            </div>
+                                            { 
+                                            value.domain === "" ?
+                                                <>
+                                                    <div style={{margin:10}}>
+                                                        <label style={{fontWeight:"bold"}}>Image Origin : </label>
+                                                        <label>local uploded image</label>
+                                                    </div>
+                                                </> 
+                                                :
+                                                <>
+                                                    <div style={{margin:10}}>
+                                                        <label style={{fontWeight:"bold"}}>Image Origin : </label>
+                                                        <label>Automatic screenshot capture</label>
+                                                    </div>
+                                                    <div style={{margin:10}}>
+                                                        <label style={{fontWeight:"bold"}}>Domain : </label>
+                                                        <label>{ value.domain}</label>
+                                                    </div>
+                                                    <div style={{margin:10}}>
+                                                        <label style={{fontWeight:"bold"}}>WebPagePath : </label>
+                                                        <label>{ value.webpagePathData }</label>
+                                                    </div>
+                                                </>
+                                            }
                                             <div> 
                                                 <Button danger onClick={() => handleDelete(value.order)} style={{ margin:5, marginRight:20, marginTop:10, float:"right"}}>Delete</Button>     
                                             </div>
@@ -194,15 +182,18 @@ const ConfigPage = () => {
                         </div>  
                         <div id="leftButtonConfig" >
                             <div>
-                                <Button type="primary" style={{ margin:5}} onClick={() => handleSave()}>Save Changes</Button>
+                                <Button type="primary" style={{ margin:5, width:120 }} onClick={() => handleSave()}>Save Changes</Button>
                             </div>
                             <div>
-                                <Button style={{ margin:5}} onClick={() => setAddPageActive(!AddPageActive)}>Add Page</Button>
+                                <Button style={{ margin:5, width:120 }} onClick={() => displayForm('slide', !addSlideActive)}>Add Page</Button>
+                            </div>
+                            <div>
+                                <Button style={{ margin:5, width:120 }} onClick={() => displayForm('config', !updateConfigActive)}>Update Config</Button>
                             </div>
                         </div>
                         <div id="rightButtonConfig" >
                             <div>
-                                <Button type="primary" style={{ margin:5}} onClick={() => navigate("/")}>Return to Slideshow</Button>
+                                <Button type="primary" style={{ margin:5, width:150 }} onClick={() => navigate("/")}>Return to Slideshow</Button>
                             </div>
                         </div>
                     </Content>

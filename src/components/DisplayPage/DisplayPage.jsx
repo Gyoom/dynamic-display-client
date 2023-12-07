@@ -5,8 +5,10 @@ import { Layout, Card, Button, InputNumber } from 'antd'
 import loadingGif from "../../Assets/loading/loading.gif"
 // react service(s)
 import picturesService from "services/pictures"
+import slidesService from "services/slides"
 // react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
+
 // javascript variables
 const loadStyle = {
     display: "block", 
@@ -15,27 +17,30 @@ const loadStyle = {
     marginTop: '15%', 
     height:'40%', 
 }
-var time = false
+var timeToReload = false
+var loadIndex = 0
 var displayDelay = 10 * 1000
 var reloadDelay = 20 * 60 * 1000
-var transitionPeriod = 2
-var pictures = []
-var picturesIndex = 0
+var transitionDelay = 2
+var slides = []
+var slidesIndex = 0
 var activesLoop = 0
 
 const DisplayPage = () => {
     // use context(s)
     const { isConfigInitialized, config } = useContext(ConfigContext)
     // use state(s)
-    const [displayIsActive, setDisplayIsActive] = useState(false)
-    const [loopIsActive, setLoopIsActive] = useState(false)
-    const [stopDisplay, setStopDispay] = useState(false)
+    const [isLoadHasBegin, setIsLoadHasBegin] = useState(false)
+    const [isDisplayIsVisible, setIsDisplayIsVisible] = useState(false)
 
     // use effect(s)
     // timer next load pictures
     useEffect(() => {
         const interval = setInterval(() => {
-            time = true
+            if (loadIndex === 0)
+            {
+                timeToReload = true
+            }
         }, reloadDelay)
 
         return () => clearInterval(interval)
@@ -47,6 +52,7 @@ const DisplayPage = () => {
         {
             displayDelay = config.displayDelay * 1000
             reloadDelay = config.reloadDelay * 60 * 1000
+            transitionDelay = config.transitionDelay
         }
     }, [isConfigInitialized])
 
@@ -56,82 +62,78 @@ const DisplayPage = () => {
     
     // transition first part
     const toBlack = async () => {
-        document.body.style.transition = "opacity " + transitionPeriod / 2 +"s"
+        document.body.style.transition = "opacity " + transitionDelay / 2 +"s" // Todo
         document.body.style.opacity = 0
-        await delay((transitionPeriod / 2) * 1000)
+        await delay((2 / 2) * 1000)
     }
   
     // transition second part
     const toWhite = async () => {
-        document.body.style.transition = "opacity " + transitionPeriod / 2 +"s"
+        document.body.style.transition = "opacity " + transitionDelay / 2 +"s"
         document.body.style.opacity = 1
-        await delay((transitionPeriod / 2) * 1000)
+        await delay((transitionDelay / 2) * 1000)
     }
 
+    // change the display of webpage
     const displaySlide = (direction) => {
-        console.log("slide " + picturesIndex + " is displayed")
+        console.log("slide " + slidesIndex + " is displayed")
 
         if (!direction)
         {
-            picturesIndex = picturesIndex - 2
-            if (picturesIndex === -1)
-                picturesIndex = pictures.length - 1
-            else if (picturesIndex === -2)
-                picturesIndex = pictures.length - 2
+            slidesIndex = slidesIndex - 2
+            if (slidesIndex === -1)
+                slidesIndex = slides.length - 1
+            else if (slidesIndex === -2)
+                slidesIndex = slides.length - 2
         }
 
-        document.getElementById('img').setAttribute('src', pictures[picturesIndex])
+        document.getElementById('img').setAttribute('src', slides[slidesIndex].picture)
         
-        if (picturesIndex === pictures.length - 1)
-            picturesIndex = 0
+        if (slidesIndex === slides.length - 1)
+            slidesIndex = 0
         else
-            picturesIndex++
+            slidesIndex++
     }
     
-    // load picture
-    const getPictures = async () => {
+    // load initials Slides
+    const getInitialsSlides = async () => {
         // load picture
         console.log("Start loading")
-        var rawPictures = []
-        picturesIndex = 0
-        var screenResolution = {
-            height: 900,
-            width: 1920,
-        }
-        rawPictures = await picturesService.getAll(screenResolution).catch(e =>
-            {
-                console.log(e)
-                alert("communication error with server, please reload")    
-                return
-            })
+        var rawSlides = []
+        slidesIndex = 0
+    
+        rawSlides = await slidesService.getAllToDisplay().catch(e => {
+            console.log(e)
+            alert("communication error with server, please reload")    
+            return
+        })
         console.log("Finish loading")
 
         // check if available picture exist
-        if (rawPictures.length === 0 || rawPictures.find(s => s !== null && !s.startsWith('404')) == undefined)
+        if (rawSlides.length === 0 || rawSlides.find(s => s !== "") == undefined)
         {
-            setStopDispay(true)
             alert("No available images")
-            document.getElementById('img').remove();
+            document.getElementById('img').remove()
             return
         }
 
-        pictures = []
-        rawPictures.forEach(rawPicture => {
-            if(rawPicture !== null && !rawPicture.startsWith('404'))
+        slides = []
+        rawSlides.forEach(rawSlide => {
+            if(rawSlide.picture !== "")
             {
-                pictures.push(rawPicture)
+                slides.push(rawSlide)
             }
         })
-
+        loadIndex = slides.length
+        timeToReload = false
         // start first part transition   
         await toBlack()
         // display first picture
-        setLoopIsActive(true)
         document.getElementById('img').style = {}
         document.getElementById('img').style.height = '100%'
         document.getElementById('img').style.width = '100%'
         displaySlide(true)
-
+        setIsDisplayIsVisible(true)
         // start second transition
         await toWhite() 
 
@@ -140,55 +142,48 @@ const DisplayPage = () => {
 
     }
 
+    const reloadSlidePicture = async () => {
+        slides[slidesIndex].picture = await picturesService.getOneById(slides[slidesIndex].id)
+        .catch(e => {
+            console.log(e)  
+            return
+        })
+        loadIndex--
+    }
+
     const carousel = async () => {
         activesLoop++
         while (true)
         {   
-            // check time to load picture
-            if (time)
-            {
-                await getPictures()
-                time = false
-            }
-
-            // wait next transition
-            await delay(displayDelay)
             // check actives loops
             if (activesLoop > 1)
             {
                 activesLoop--
                 return
             }
+
+            // check time to load picture
+            if (timeToReload)
+            {
+                await getInitialsSlides()
+            }
+            if (loadIndex > 0)
+            {
+                // wait reload image and de
+                await Promise.all([reloadSlidePicture(), delay(displayDelay)])
+            } 
+            else 
+            {
+                // wait next transition
+                await delay(displayDelay)
+            }
             
             // start first part transition   
             await toBlack()
-
-             // check actives loops
-             if (activesLoop > 1)
-             {
-                 activesLoop--
-                 return
-             }
-
             // display next available picture
             displaySlide(true)
-
-             // check actives loops
-             if (activesLoop > 1)
-             {
-                 activesLoop--
-                 return
-             }
-
             // start second transition
             await toWhite()  
-
-             // check actives loops
-             if (activesLoop > 1)
-             {
-                 activesLoop--
-                 return
-             }
     
         }
     }
@@ -196,12 +191,11 @@ const DisplayPage = () => {
     // init 
     const initSlideshow = async () => {
         // check only one loop 
-        if (displayIsActive)
+        if (isLoadHasBegin)
             return
-        setDisplayIsActive(true)
-        time = false
+        setIsLoadHasBegin(true)
         // load pictures
-        await getPictures()
+        await getInitialsSlides()
 
     }
 
@@ -222,17 +216,15 @@ const DisplayPage = () => {
     return (
         <>
             <img id="img" style={loadStyle} src={loadingGif} ></img>
-            { loopIsActive ?
+            { isDisplayIsVisible ?
                 <>
                     <div style={{ position: 'fixed', bottom: '2%', left: '1%'}}>
-
                         <Button style={{ display:'block', margin:2, height:35, width:80}} onClick={previous} >Previous</Button>
                         <Button style={{ margin:2, height:35, width:80}} onClick={next} >Next</Button>
                     </div> 
                     <div style={{ textAlign:'right', position: 'fixed', bottom: '2%', right: '1%'}}>
-
-                    <Button style={{display:'block', height:35, width:80, margin:2}} onClick={previous} >Previous</Button>
-                    <Button style={{ margin:2 , height:35, width:80 }} onClick={next} >Next</Button>
+                        <Button style={{display:'block', height:35, width:80, margin:2}} onClick={previous} >Previous</Button>
+                        <Button style={{ margin:2 , height:35, width:80 }} onClick={next} >Next</Button>
                     </div>
                 </>
             : "" }

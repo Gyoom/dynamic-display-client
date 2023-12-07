@@ -1,11 +1,11 @@
 // packages npm
 import React,{ useState } from "react";
-import { Button, Form, Input, InputNumber, Card } from 'antd';
+import { Button, Form, Input, Card } from 'antd';
 import { v4 as uuid } from 'uuid';
 // react services
 import picturesService from "services/slides";
 
-const AddPageForm = ({ slides, setSlides }) => {
+const AddPageForm = ({ slides, setSlides, setAddSlideActive }) => {
     // use states
     const [image, setImage] = useState("")
     const [isScreenshotSlide, setIsScreenshotSlide] = useState(false)
@@ -24,7 +24,6 @@ const AddPageForm = ({ slides, setSlides }) => {
             setUploadErrorMessage("* No files currently selected for upload")
             return
         }
-        console.log(values)
 
         var newSlide = {
             id: uuid(),
@@ -36,8 +35,8 @@ const AddPageForm = ({ slides, setSlides }) => {
         }
 
         setSlides(slides.concat(newSlide))
-        picturesService.post(newSlide)
-        location.replace(location.href)   
+        picturesService.createOne(newSlide)
+        setAddSlideActive(false)  
     }
 
     const handleErrorSubmit = (errorInfo) => {
@@ -57,13 +56,6 @@ const AddPageForm = ({ slides, setSlides }) => {
         }
         if (!validFileType(e.target.files[0])) {
             setUploadErrorMessage("* The current file type is incorrect")
-            setImage("")
-            return
-        }
-
-        if (e.target.files[0].size >= 1048576)
-        {
-            setUploadErrorMessage("* This file is too large")
             setImage("")
             return
         }
@@ -114,7 +106,7 @@ const AddPageForm = ({ slides, setSlides }) => {
                                     <Input />
                                 </Form.Item>
                                 <Form.Item
-                                    label="Path data : "
+                                    label="WebPage path : "
                                     name="webpagePathData"
                                     rules={[{ required: true, message: 'Please input a domain order ...' }]}
                                 >
@@ -125,7 +117,7 @@ const AddPageForm = ({ slides, setSlides }) => {
                         : 
                             <Form.Item style={{marginBottom:0}}>  
                                 <div style={{width:"600px"}}>
-                                    <label className="label_add_slide" id="label_image_uploads" htmlFor="image_uploads">Choose a image (1 Mb max) .png, .jpg, .jpeg ...</label> 
+                                    <label className="label_add_slide" id="label_image_uploads" htmlFor="image_uploads">Choose a image .png, .jpg, .jpeg ...</label> 
                                     <input type="file" style={{ opacity:"0"}}id="image_uploads" name="image_uploads" accept="image/png, image/jpeg" onChange={handleImageChange}/>
                                 </div>
                                 <div id="preview" style={{ marginTop:"20px" }}>
