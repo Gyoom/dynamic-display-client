@@ -8,5 +8,5 @@ const getOneById = (id) => {
 }
 
 export default { 
-  getOneById: getOneById
+  getOneBySlideId: getOneById
 }

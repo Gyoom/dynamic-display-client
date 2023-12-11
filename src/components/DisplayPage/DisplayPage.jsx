@@ -1,6 +1,8 @@
 // npm packag(s)
 import React,{ useState, useEffect, useContext } from "react"
-import { Layout, Card, Button, InputNumber } from 'antd'
+import { Button } from 'antd'
+import { useSprings, animated } from '@react-spring/web'
+import { useDrag } from '@use-gesture/react'
 // local file(s)
 import loadingGif from "../../Assets/loading/loading.gif"
 // react service(s)
@@ -8,23 +10,73 @@ import picturesService from "services/pictures"
 import slidesService from "services/slides"
 // react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
+// css file(s)
+import './DisplayPage.css'
 
 // javascript variables
-const loadStyle = {
-    display: "block", 
-    marginRight: 'auto', 
-    marginLeft:'auto', 
-    marginTop: '15%', 
-    height:'40%', 
-}
-var timeToReload = false
 var loadIndex = 0
+var loadCount = 0
 var displayDelay = 10 * 1000
 var reloadDelay = 20 * 60 * 1000
 var transitionDelay = 2
 var slides = []
-var slidesIndex = 0
 var activesLoop = 0
+var index = 0
+
+function Viewpager() {
+    const width = window.innerWidth
+  
+    const [props, api] = useSprings(slides.length, i => ({
+      x: i * width,
+      scale: 1,
+      display: 'block',
+    }))
+
+    // drag change
+    const bind = useDrag(({ active, movement: [mx], direction: [xDir], cancel }) => {
+      if (active && Math.abs(mx) > width / 6) {
+        index = index + (xDir > 0 ? -1 : 1)
+        if (index < 0)
+            index = slides.length - 1
+        else if (index === slides.length)
+            index = 0
+        cancel()
+      }
+      api.start(i => {
+        if (i < index - 1 || i > index + 1) return { display: 'none' }
+        const x = (i - index) * width + (active ? mx : 0)
+        const scale = active ? 1 - Math.abs(mx) / width / 2 : 1
+        return { x, scale, display: 'block' }
+      })
+    })
+
+    // dynamic and button change
+    document.body.addEventListener("changeSlideDisplayed", (e) => {
+        index = index + e.detail
+        
+        if (index === slides.length)
+            index = 0
+        if (index < 0)
+            index = slides.length - 1
+
+        api.start(i => {
+            const x = (i - index) * width + (i > index ? width : 0)
+            const scale = 1
+            return { x, scale, display: 'block' }
+        })
+    
+        }, false);
+
+    return (
+      <div className="wrapper">
+        {props.map(({ x, display, scale }, i) => (
+          <animated.div className="page" {...bind()} key={i} style={{ display, x }}>
+            <animated.div id={'picture' + i} style={{ scale, backgroundImage: "url('" + slides[i].picture + "')" }} />
+          </animated.div>
+        ))}
+      </div>
+    )
+  }
 
 const DisplayPage = () => {
     // use context(s)
@@ -34,13 +86,11 @@ const DisplayPage = () => {
     const [isDisplayIsVisible, setIsDisplayIsVisible] = useState(false)
 
     // use effect(s)
-    // timer next load pictures
+    // timer next loads pictures
     useEffect(() => {
         const interval = setInterval(() => {
-            if (loadIndex === 0)
-            {
-                timeToReload = true
-            }
+            loadCount = 0
+            loadIndex = 0
         }, reloadDelay)
 
         return () => clearInterval(interval)
@@ -64,7 +114,7 @@ const DisplayPage = () => {
     const toBlack = async () => {
         document.body.style.transition = "opacity " + transitionDelay / 2 +"s" // Todo
         document.body.style.opacity = 0
-        await delay((2 / 2) * 1000)
+        await delay((transitionDelay / 2) * 1000)
     }
   
     // transition second part
@@ -73,41 +123,18 @@ const DisplayPage = () => {
         document.body.style.opacity = 1
         await delay((transitionDelay / 2) * 1000)
     }
-
-    // change the display of webpage
-    const displaySlide = (direction) => {
-        console.log("slide " + slidesIndex + " is displayed")
-
-        if (!direction)
-        {
-            slidesIndex = slidesIndex - 2
-            if (slidesIndex === -1)
-                slidesIndex = slides.length - 1
-            else if (slidesIndex === -2)
-                slidesIndex = slides.length - 2
-        }
-
-        document.getElementById('img').setAttribute('src', slides[slidesIndex].picture)
-        
-        if (slidesIndex === slides.length - 1)
-            slidesIndex = 0
-        else
-            slidesIndex++
-    }
     
     // load initials Slides
     const getInitialsSlides = async () => {
         // load picture
         console.log("Start loading")
         var rawSlides = []
-        slidesIndex = 0
     
         rawSlides = await slidesService.getAllToDisplay().catch(e => {
             console.log(e)
             alert("communication error with server, please reload")    
             return
         })
-        console.log("Finish loading")
 
         // check if available picture exist
         if (rawSlides.length === 0 || rawSlides.find(s => s !== "") == undefined)
@@ -124,31 +151,32 @@ const DisplayPage = () => {
                 slides.push(rawSlide)
             }
         })
-        loadIndex = slides.length
-        timeToReload = false
-        // start first part transition   
+        loadIndex = 1
+        loadCount = 0
+        console.log("Finish loading")
+        // display viewPager 
         await toBlack()
-        // display first picture
-        document.getElementById('img').style = {}
-        document.getElementById('img').style.height = '100%'
-        document.getElementById('img').style.width = '100%'
-        displaySlide(true)
         setIsDisplayIsVisible(true)
-        // start second transition
+        console.log('picture ' + index + ' displayed')
         await toWhite() 
-
         // begin endless picture display
         carousel()
+
 
     }
 
     const reloadSlidePicture = async () => {
-        slides[slidesIndex].picture = await picturesService.getOneById(slides[slidesIndex].id)
+        var newPicture = await picturesService.getOneBySlideId(slides[loadIndex].id)
         .catch(e => {
-            console.log(e)  
-            return
+            console.log(e)
         })
-        loadIndex--
+        document.getElementById('picture' + loadIndex).style.backgroundImage = "url('" + newPicture + "')"
+        console.log('picture ' + loadIndex + ' reloaded')
+        loadIndex++
+        loadCount++
+
+        if (loadIndex === slides.length)
+            loadIndex = 0
     }
 
     const carousel = async () => {
@@ -161,15 +189,9 @@ const DisplayPage = () => {
                 activesLoop--
                 return
             }
-
-            // check time to load picture
-            if (timeToReload)
+            if (loadCount <= slides.length)
             {
-                await getInitialsSlides()
-            }
-            if (loadIndex > 0)
-            {
-                // wait reload image and de
+                // wait reload image and next transition
                 await Promise.all([reloadSlidePicture(), delay(displayDelay)])
             } 
             else 
@@ -177,15 +199,26 @@ const DisplayPage = () => {
                 // wait next transition
                 await delay(displayDelay)
             }
-            
-            // start first part transition   
+            // start first part transition  
             await toBlack()
-            // display next available picture
-            displaySlide(true)
+            const changeSlideDisplayed = new CustomEvent("changeSlideDisplayed", { detail: 1 })
+            document.body.dispatchEvent(changeSlideDisplayed)
+            await delay(500)
+            console.log('picture ' + index + ' displayed')
             // start second transition
-            await toWhite()  
-    
+            await toWhite()    
         }
+    }
+
+    const previous = () => {
+        const changeSlideDisplayed = new CustomEvent("changeSlideDisplayed", { detail: -1 })
+        document.body.dispatchEvent(changeSlideDisplayed)
+       
+    }
+
+    const next = () => {
+        const changeSlideDisplayed = new CustomEvent("changeSlideDisplayed", { detail: 1 })
+        document.body.dispatchEvent(changeSlideDisplayed)
     }
 
     // init 
@@ -198,36 +231,26 @@ const DisplayPage = () => {
         await getInitialsSlides()
 
     }
-
-    const previous = () => {
-        console.log('previous')
-        displaySlide(false)
-        carousel()
-    }
-
-    const next = () => {
-        console.log('next')
-        displaySlide(true)
-        carousel()
-    }
-
     initSlideshow()
 
     return (
         <>
-            <img id="img" style={loadStyle} src={loadingGif} ></img>
             { isDisplayIsVisible ?
                 <>
-                    <div style={{ position: 'fixed', bottom: '2%', left: '1%'}}>
-                        <Button style={{ display:'block', margin:2, height:35, width:80}} onClick={previous} >Previous</Button>
-                        <Button style={{ margin:2, height:35, width:80}} onClick={next} >Next</Button>
-                    </div> 
-                    <div style={{ textAlign:'right', position: 'fixed', bottom: '2%', right: '1%'}}>
-                        <Button style={{display:'block', height:35, width:80, margin:2}} onClick={previous} >Previous</Button>
-                        <Button style={{ margin:2 , height:35, width:80 }} onClick={next} >Next</Button>
+                    <div className="flex fill center">
+                        <Viewpager />
+                        <div style={{ position: 'fixed', bottom: '2%', left: '1%'}}>
+                            <Button style={{ display:'block', margin:2, height:35, width:80}} onClick={previous} >Previous</Button>
+                            <Button style={{ margin:2, height:35, width:80}} onClick={next} >Next</Button>
+                        </div> 
+                        <div style={{ textAlign:'right', position: 'fixed', bottom: '2%', right: '1%'}}>
+                            <Button style={{display:'block', height:35, width:80, margin:2}} onClick={previous} >Previous</Button>
+                            <Button style={{ margin:2 , height:35, width:80 }} onClick={next} >Next</Button>
+                        </div>
                     </div>
+                    
                 </>
-            : "" }
+            : <img id="img" style={{ display:'block', marginRight:'auto', marginLeft:'auto', marginTop:'15%', height:'40%'}} src={loadingGif} ></img> }
         </>
     )
 

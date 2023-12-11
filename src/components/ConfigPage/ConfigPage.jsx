@@ -10,6 +10,8 @@ import UpdateConfigForm from "./UpdateConfigForm/UpdateConfigForm"
 import slideServices from "services/slides"
 // react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
+// css file(s)
+import './ConfigPage.css'
 
 
 const { Header, Footer, Content } = Layout;
