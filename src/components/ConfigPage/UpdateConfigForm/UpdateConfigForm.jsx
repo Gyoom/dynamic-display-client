@@ -6,14 +6,19 @@ import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
 // react context(s)
 import { Context as ConfigContext } from "contexts/configContext"
 
-const UpdateConfigForm = ({ displayDelay, setDisplayDelay, reloadDelay, setReloadDelay, transitionDelay, setTransitionDelay, domainNames, setDomainNames}) => {
+const UpdateConfigForm = () => {
     // use states
+    const [displayDelay, setDisplayDelay] = useState(-1)
+    const [reloadDelay, setReloadDelay] = useState(-1)
+    const [transitionDelay, setTransitionDelay] = useState(-1)
+    const [domainNames, setDomainNames] = useState([])
     const [newDomainName, setNewDomainName] = useState('')
 
     // use context(s)
     const { 
         isConfigInitialized, 
-        config
+        config,
+        changeConfig
     } = useContext(ConfigContext)
 
     // use effect(s)
@@ -105,6 +110,26 @@ const UpdateConfigForm = ({ displayDelay, setDisplayDelay, reloadDelay, setReloa
         setDomainNames(tempArray)
     }
 
+    const handleSave = async () => {
+        if(
+            displayDelay !== config.displayDelay ||
+            reloadDelay !== config.reloadDelay ||
+            transitionDelay !== config.transitionDelay ||
+            domainNames.toString() !== config.domains.toString()
+           )
+        {
+            var newConfig = 
+            {
+                displayDelay: displayDelay,
+                reloadDelay: reloadDelay,
+                transitionDelay : transitionDelay,
+                domains : domainNames
+            }
+            await changeConfig(newConfig)  
+            location.reload()
+        } 
+    }
+
     return (
         <div id="configList">
             <ul>
@@ -146,54 +171,54 @@ const UpdateConfigForm = ({ displayDelay, setDisplayDelay, reloadDelay, setReloa
                                             onChange={handleTransitionDelay}
                                     />
                                 </div>
+                                <Button style={{ marginLeft:20}} type="primary" onClick={() => handleSave()}>
+                                    Update
+                                </Button>
                             </div>
-                            <div >
-                                <div>
+                            <div >   
                                 <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>Domain names : </label>
-                                        <List
-                                            size="small"
-                                            header=
-                                            {
-                                                <Space
-                                                    style={{
-                                                        padding: '0 0 4px',
-                                                    }}
-                                                >
-                                                    <Input
-                                                    placeholder="Please add domain"
-                                                    value={newDomainName}
-                                                    onChange={onNameChange}
-                                                    onKeyDown={(e) => e.stopPropagation()}
-                                                    />
-                                                    <Button type="text" icon={<PlusOutlined />} onClick={addDomainName}>
-                                                    </Button>
-                                                </Space>
-                                            }
-                                            bordered
-                                            dataSource={domainNames}
+                                <List
+                                    size="small"
+                                    header=
+                                    {
+                                        <Space
+                                            style={{
+                                                padding: '0 0 4px',
+                                            }}
                                         >
-                                            <VirtualList
-                                                data={domainNames}
-                                                height={domainNames.length < 3 ? domainNames.length * 50 : 150}
-                                                itemHeight={4}
-                                                itemKey="id"
-                                            >
-                                                
-                                                {(item) => (
-                                                    <List.Item>
-                                                        <List.Item.Meta
-                                                            title={item.name}
-                                                        />  
-                                                        
-                                                        <Button type="text" icon={<MinusOutlined />} onClick={() => removeDomainName(item)}>
-                                                        </Button>
-                                                    </List.Item>
-                                                )}
-                                            </VirtualList>
-                                        </List>
-                                </div>
+                                            <Input
+                                            placeholder="Please add domain"
+                                            value={newDomainName}
+                                            onChange={onNameChange}
+                                            onKeyDown={(e) => e.stopPropagation()}
+                                            />
+                                            <Button type="text" icon={<PlusOutlined />} onClick={addDomainName}>
+                                            </Button>
+                                        </Space>
+                                    }
+                                    bordered
+                                    dataSource={domainNames}
+                                >
+                                    <VirtualList
+                                        data={domainNames}
+                                        height={domainNames.length < 3 ? domainNames.length * 50 : 150}
+                                        itemHeight={4}
+                                        itemKey="id"
+                                    >
+                                        
+                                        {(item) => (
+                                            <List.Item>
+                                                <List.Item.Meta
+                                                    title={item.name}
+                                                />  
+                                                <Button type="text" icon={<MinusOutlined />} onClick={() => removeDomainName(item)}>
+                                                </Button>
+                                            </List.Item>
+                                        )}
+                                    </VirtualList>
+                                </List>   
                             </div>
-                        </div>
+                        </div>     
                     </Form>
                 </Card>
             </ul>

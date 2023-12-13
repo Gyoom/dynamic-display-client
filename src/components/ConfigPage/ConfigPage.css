@@ -19,24 +19,28 @@ body{
 
 #content {
     padding-bottom: 2.5rem; 
+    display:flex; 
+    flex-direction:row;
+}
+
+#leftColumn {
+  margin-top: 1em;
+  margin-left: 10px;
+}
+
+#centralColumn {
+  width: 100%; 
+}
+
+#rightColumn {
+  margin-top: 1em;
+  margin-right: 10px;
 }
 
 #configList {
     display: flex; 
     align-items: center;
-    justify-content: center
-}
-
-#leftButtonConfig { 
-    position: fixed;
-    top: 125px;
-    left: 1em;
-}
-
-#rightButtonConfig { 
-    position: fixed;
-    top: 125px;
-    right: 1em;
+    justify-content: center;
 }
 
 #footer {
