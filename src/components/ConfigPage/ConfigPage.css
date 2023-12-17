@@ -4,7 +4,6 @@ body{
     flex-direction: column;
 }
 
-
 #layout {
     position: relative;
     min-height: 100vh;
@@ -12,7 +11,7 @@ body{
 
 #header {
     color: #fff;
-    background-color: #7dbcea; 
+    background-color: #181a1d; 
     height: 110px;
 
 }
@@ -21,6 +20,7 @@ body{
     padding-bottom: 2.5rem; 
     display:flex; 
     flex-direction:row;
+    background-color: #9398a0; 
 }
 
 #leftColumn {
@@ -29,18 +29,22 @@ body{
 }
 
 #centralColumn {
+  margin-top: 1.3em;
+  margin-bottom: 2.5em;
+  padding-left: 3em;
+  padding-right: 3em;
   width: 100%; 
 }
+
+/* #configList {
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+} */
 
 #rightColumn {
   margin-top: 1em;
   margin-right: 10px;
-}
-
-#configList {
-    display: flex; 
-    align-items: center;
-    justify-content: center;
 }
 
 #footer {
@@ -51,7 +55,7 @@ body{
 
     text-align: center;
     color: #fff;
-    background-color: #7dbcea;
+    background-color: #181a1d; 
 }
 
 .label_add_slide {

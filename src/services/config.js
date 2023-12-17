@@ -7,12 +7,6 @@ const get = () => {
   return request.then(response => response.data)
 }
 
-const change = (newConfig) => {
-    const request = axios.post(baseUrl, newConfig)
-    return request.then(response => response.data)
-  }
-
 export default { 
-  get: get,
-  change: change
+  get: get
 }

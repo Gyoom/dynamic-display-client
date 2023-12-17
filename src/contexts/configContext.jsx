@@ -23,18 +23,11 @@ const ProviderWrapper = (props) => {
     }
 
     useEffect(hook, [])
-
-    const changeConfig = async (newConfig) => {
-        await configService.change(newConfig)
-        setConfig(newConfig)
-    }
-
     
     const exposedValue = {
         isConfigInitialized, 
         setIsConfigInitialized,
         config,
-        changeConfig,
     }
     
     return (
