@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const baseUrl = import.meta.env.VITE_URL_SERVER + "/series"
+const baseUrl = import.meta.env.VITE_URL_SERVER + "/api/series"
 
 const getAll = () => {
   const request = axios.get(baseUrl)

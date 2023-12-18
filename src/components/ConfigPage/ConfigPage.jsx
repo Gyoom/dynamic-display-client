@@ -36,10 +36,10 @@ const ConfigPage = () => {
                         <div id='leftColumn'>
                             <div style={{ position:'sticky', top:10}}>
                                 <div>
-                                    <Button style={{ margin:5, width:120 }} onClick={() => {setCentralColumnDisplay('series')}}>Series</Button>
+                                    <Button style={{ margin:5, width:120, fontWeight:'bold' }} onClick={() => {setCentralColumnDisplay('series')}}>Series</Button>
                                 </div>
                                 <div>
-                                    <Button style={{ margin:5, width:120 }} onClick={() => {setCentralColumnDisplay('slides')}}>Slides</Button>
+                                    <Button style={{ margin:5, width:120, fontWeight:'bold' }} onClick={() => {setCentralColumnDisplay('slides')}}>Slides</Button>
                                 </div> 
                             </div>
                         </div>

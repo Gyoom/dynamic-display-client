@@ -20,16 +20,16 @@ const SlidesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
         <>
             <List
                 size="small"
-                style= {{ border: '1px solid' }}
+                style= {{ border: '1px solid', width:'75%', marginLeft:'auto', marginRight:'auto', backgroundColor:'#1e2842', color:'#fff' }}
                 bordered
                 header=
                     {   
                         <div style={{  width:'100%', display: 'flex', flexDirection:'row' }}>
-                            <div style={{  margin:'auto' }}>
+                            <div style={{  margin:'auto', fontWeight:'bold' }}>
                                 Slides
                             </div>
                             <div style={{ width:'100%', textAlign:'right' }}>
-                                <Button type="text" style={{ marginLeft:10 }} icon={<PlusOutlined />} onClick={handleAddSlide}></Button>
+                                <Button type="text" style={{ marginLeft:10, color:'#fff' }} icon={<PlusOutlined />} onClick={handleAddSlide}></Button>
                             </div>
                         </div>    
                     }
@@ -48,7 +48,7 @@ const SlidesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
                             <List.Item.Meta
                                 title={slide.name}
                             /> 
-                            <Button type="text" icon={<MinusOutlined />} style={{ marginLeft:2, marginRight:2 }} onClick={() => removeSlide(slide.id)}>
+                            <Button type="text" icon={<MinusOutlined />} style={{ marginLeft:2, marginRight:2, color:'#fff' }} onClick={() => removeSlide(slide.id)}>
                             </Button>
                         </List.Item>
                     )}

@@ -31,15 +31,21 @@ const SeriesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
         setNewSerieName(e.target.value)
     }
     
-    const handleAddSerie = () => {
-        if (newSerie === '' || isError)
+    const handleAddSerie = async () => {
+        if (newSerieName === '' || isError)
             return
+        // generate new id
+        var id = 0
+        for (let index = 0; index < series.length; index++) {
+            id = series[index].id > id ? series[index].id + 1 : id 
+        }
         var newSerie = {
-            id: uuid(),
+            id: id,
             name: newSerieName,
             slides: []
         }
-        addSerie(newSerie)
+        await addSerie(newSerie)
+        setNewSerieName('')
     }
 
     const handleRemoveSerie = (serieToRemove) => {
@@ -55,7 +61,7 @@ const SeriesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
         <>
             <List
                 size="small"
-                style= {{ border: '1px solid' }}
+                style= {{ border: '1px solid', backgroundColor:'#1e2842', color:'#fff' }}
                 bordered
                 header=
                     {
@@ -72,7 +78,7 @@ const SeriesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
                                     onKeyDown={(e) => e.stopPropagation()}
                                     
                                 />
-                                <Button type="text" style={{ marginLeft:10 }} icon={<PlusOutlined />} onClick={handleAddSerie}>
+                                <Button type="text" style={{ marginLeft:10, color:'#fff' }} icon={<PlusOutlined />} onClick={handleAddSerie}>
                                 </Button>
                             </div>
                         </div>
@@ -103,7 +109,7 @@ const SeriesList = ({ setCentralColumnDisplay, setCurrentSerie }) => {
                                 }
                             /> 
                             
-                            <Button type="text" style={{ marginLeft:2, marginRight:2 }} icon={<MinusOutlined />} onClick={() => handleRemoveSerie(serie)}></Button>
+                            <Button type="text" style={{ marginLeft:2, marginRight:2, color:'#fff' }} icon={<MinusOutlined />} onClick={() => handleRemoveSerie(serie)}></Button>
                         </List.Item>
                     )}
                 </VirtualList>

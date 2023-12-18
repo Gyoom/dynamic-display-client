@@ -11,7 +11,7 @@ body{
 
 #header {
     color: #fff;
-    background-color: #181a1d; 
+    background-color: #1e2842;; 
     height: 110px;
 
 }
@@ -20,7 +20,7 @@ body{
     padding-bottom: 2.5rem; 
     display:flex; 
     flex-direction:row;
-    background-color: #9398a0; 
+    background-color: #141a2c; 
 }
 
 #leftColumn {
@@ -55,7 +55,7 @@ body{
 
     text-align: center;
     color: #fff;
-    background-color: #181a1d; 
+    background-color: #1e2842;
 }
 
 .label_add_slide {

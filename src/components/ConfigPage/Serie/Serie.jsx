@@ -2,11 +2,13 @@
 import React,{ useEffect, useState, useContext } from "react"
 import { Card, Button, Form, InputNumber, Input, Select } from 'antd'
 import { List as MovableList, arrayMove } from 'react-movable'
-import { PlusOutlined, MinusOutlined } from '@ant-design/icons'
+import { MinusOutlined } from '@ant-design/icons'
 import { v4 as uuid } from 'uuid'
 // react context(s)
 import { Context as SeriesContext } from "contexts/seriesContext"
 import { Context as SlidesContext } from "contexts/slidesContext"
+// css file(s)
+import './Serie.css'
 
 const Serie = ({ serie }) => {
     // use context(s)
@@ -227,7 +229,7 @@ const Serie = ({ serie }) => {
 
     return (                       
         <div>
-            <Card style={{ margin:'auto', width:600, backgroundColor:'#7dbcea'}} title={<h3>{ serie.name }</h3>} >
+            <Card style={{ margin:'auto', width:600, backgroundColor:'#1e2842', color:'#fff' }} title={<h3 style={{ color:'#fff' }}>{ serie.name }</h3>} >
                 <Form
                     wrapperCol={{ span: 16 }}
                     style={{ maxWidth: 600 }}
@@ -238,7 +240,7 @@ const Serie = ({ serie }) => {
                     <div style={{ display:'flex', flexDirection:'row' }}>
                         <div>
                             <div style={{ margin:20, marginTop:0}}>
-                                <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>Reload Delay ({'>='} 5) : </label>
+                                <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff'}}>Reload Delay ({'>='} 5) : </label>
                                 <InputNumber 
                                             size="small" 
                                             addonAfter="min"
@@ -248,7 +250,7 @@ const Serie = ({ serie }) => {
                                 />
                             </div>
                             <div style={{ margin:20}}>
-                                <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>Display Delay ({'>='} 1) : </label>
+                                <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff'}}>Display Delay ({'>='} 1) : </label>
                                 <InputNumber 
                                         size="small" 
                                         addonAfter="s"
@@ -259,8 +261,8 @@ const Serie = ({ serie }) => {
                             </div>
                         </div>
                         <div>
-                            <div style={{ margin:20, marginTop:0}}>
-                                <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>Transition Delay ({'>='} 0) : </label>
+                            <div style={{ margin:20, marginTop:0 }}>
+                                <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff'}}>Transition Delay ({'>='} 0) : </label>
                                 <InputNumber 
                                         size="small" 
                                         addonAfter="s"
@@ -270,12 +272,11 @@ const Serie = ({ serie }) => {
                                 />
                             </div>
                             <div style={{ margin:20}}>
-                                <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>name : </label>
+                                <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff'}}>name : </label>
                                 <Input
                                         size="small" 
                                         id='nameInput'
                                         value={name}
-                                        style={{ width:200}}
                                         onChange={handleName}
                                 />
                             </div>
@@ -291,9 +292,9 @@ const Serie = ({ serie }) => {
                         >
                             {
                                 isValueChanged ? 
-                                    <Button type="primary" htmlType="submit">Save</Button>
+                                    <Button type="primary" style={{ color:'#fff' }} htmlType="submit">Save</Button>
                                 :
-                                    <Button type="primary" disabled htmlType="submit">Save</Button>
+                                    <Button type="primary" style={{ color:'#fff' }} disabled htmlType="submit">Save</Button>
                             }
                             
                         </Form.Item>
@@ -305,7 +306,9 @@ const Serie = ({ serie }) => {
                     marginLeft:'auto', 
                     marginRight:'auto', 
                     marginTop:10, 
-                    width:600
+                    width:600,
+                    backgroundColor:'#1e2842',
+                    color:'#fff'
                 }} 
             >
                 <Form
@@ -315,7 +318,7 @@ const Serie = ({ serie }) => {
                     onFinish={handleAddSlide}
                     onFinishFailed={handleErrorSubmit}
                 > 
-                    <label style={{ display:'block', fontSize:10, fontWeight:'bold' }}>slides : </label>
+                    <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff' }}>slides : </label>
                     <div style={{ display:'flex', flexDirection:'row'}} >
                         <Form.Item
                             name="newSerieSlide"

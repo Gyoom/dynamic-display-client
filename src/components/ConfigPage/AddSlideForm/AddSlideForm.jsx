@@ -125,7 +125,7 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
         <div>
             <ul>
                 
-                <Card style={{margin:5, width:"600px", backgroundColor:'#7dbcea' }} title={<h3>New Slide</h3>} >
+                <Card style={{margin:5, width:"600px", backgroundColor:'#1e2842', marginLeft:'auto', marginRight:'auto',  color:'#fff' }} title={<h3 style={{ color:'#fff' }}>New Slide</h3>} >
                     <Form
 
                         wrapperCol={{ span: 16 }}
@@ -134,12 +134,12 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
                         onFinishFailed={handleErrorSubmit}
                         autoComplete="off"
                     >
-                        <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>Name : </label>
+                        <label style={{ display:'block', fontSize:10, fontWeight:'bold',  color:'#fff'}}>Name : </label>
                         <Form.Item
                             name="newSlideName"
                             style={{
                                 width: 450,
-                                marginBottom:5
+                                marginBottom:5,
                             }}
                             rules={[{ required: true, message: 'Please input a name ...' }]}
                         >
@@ -148,13 +148,13 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
                         <Form.Item style={{marginBottom:5}}>
                             <label style={{display:"block"}}>
                                 <input style={{ verticalAlign: "middle", position: "relative", bottom:"1px" }} type="checkbox" id="screenshotCheckbox" onClick={(e) => setIsScreenshotSlide(e.target.checked)}/>
-                                Is this an automatic screenshot ?
+                                <span style={{ color:'#fff' }}> Is this an automatic screenshot ?</span>
                             </label>
                         </Form.Item>
                         { isScreenshotSlide ? 
                             // screenshot form
                             <>
-                                <label style={{ display:'block', fontSize:10, fontWeight:'bold' }}>Website : </label>
+                                <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff' }}>Website : </label>
                                 <Form.Item
                                     name="domain"
                                     style={{
@@ -172,7 +172,7 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
                                 {
                                     domain === 'AIGrafana' ?
                                     <>
-                                        <label style={{ display:'block', fontSize:10, fontWeight:'bold'}}>WebPage URL : </label>
+                                        <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff' }}>WebPage URL : </label>
                                         <Form.Item
                                             name="webpagePathData"
                                             style={{
@@ -186,7 +186,7 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
                                     </> :
                                     domain === 'AIMyReport' ?
                                     <>
-                                        <label style={{ display:'block', fontSize:10, fontWeight:'bold' }}>Tab name : </label>
+                                        <label style={{ display:'block', fontSize:10, fontWeight:'bold', color:'#fff' }}>Tab name : </label>
                                         <Form.Item
                                             name="webpagePathData"
                                             style={{
@@ -226,9 +226,9 @@ const AddPageForm = ({ setCentralColumnDisplay }) => {
                         >
                             { 
                                 checkForm ? 
-                                    <Button style={{ marginLeft:20}} type="primary" htmlType="submit">Add</Button> 
+                                    <Button style={{ marginLeft:20, color:'#fff' }} type="primary" htmlType="submit">Add</Button> 
                                 : 
-                                    <Button style={{ marginLeft:20}} disabled type="primary" htmlType="submit">Add</Button>
+                                    <Button style={{ marginLeft:20, color:'#fff' }} disabled type="primary" htmlType="submit">Add</Button>
                             }
                             
                         </Form.Item>
